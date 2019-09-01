@@ -1,6 +1,4 @@
-# Cloud Computing
-
-`create-micro-instance.txt` script creates an f1-micro instance named **micro**.
+# Installing RStudio Server on GCP
 
 `create-self-stopping-micro-instance.txt` script creates an f1-micro instance named **micro-auto** that will stop itself once the user is logged out to bring in cost-saving benefits.
 
