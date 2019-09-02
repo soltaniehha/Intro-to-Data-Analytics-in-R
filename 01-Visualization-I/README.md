@@ -1,6 +1,6 @@
 # Installing RStudio Server on GCP
 
-`create-an-instance.txt` script creates an n2-highmem-2 instance named **rstudio** that has 2 vCPUs and 16BG of memory and will stop itself once the user is logged out, to bring in cost-saving benefits.
+`create-an-instance.txt` script creates an **n2-highmem-2** instance named **rstudio** that has 2 vCPUs and 16GB of memory and will stop itself once the user is logged out, to bring in cost-saving benefits. At the time of writing this the monthly cost of this instance is about $75/month if works non-stop. With the auto-stop feature we will bring this cost significantly lower.
 
 ## Instructions on Creating the Instance & RStudio Server Installation
 
