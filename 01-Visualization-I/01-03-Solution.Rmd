@@ -1,0 +1,120 @@
+---
+title: "Solution"
+subtitle: "Aesthetics - Data Visualization - Part 2"
+output: html_notebook
+---
+
+### Exercise 1
+Besides `color`, one could also map `class` to other aesthetics such as `shape`, `size`, and `alpha`. As a practice, using the code from the notebook try to regenerate the plot experimenting with different mappings. For instance:
+
+1. Use `fl` as "shape" for your scatterplot.
+2. Use `cyl` as the "size" of your points.
+3. Use `class` as "alpha" (transparency) for the points.
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, shape = fl))
+```
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, size = cyl))
+```
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, alpha = class))
+```
+
+----
+
+### Exercise 2
+What's gone wrong with this code? Why are the points not blue?
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
+```
+
+----
+
+### Exercise 3
+Which variables in `mpg` are categorical? Which variables are continuous? (Hint: type `?mpg` to read the documentation for the dataset). How can you see this information when you run `mpg`?
+
+```{r}
+glimpse(mpg)
+```
+Alternatively, if you are using RStudio then by just type mpg the tibble should give you the variable type information.
+
+```{r}
+mpg
+```
+
+
+----
+
+### Exercise 4
+Map a continuous variable to `color`, `size`, and `shape`. How do these aesthetics behave differently for categorical vs. continuous variables?
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = cty)) +
+  geom_point()
+```
+Instead of using discrete colors, the continuous variable uses a scale that varies from a light to dark blue color.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, size = cty)) +
+  geom_point()
+```
+
+```{r}
+#ggplot(mpg, aes(x = displ, y = hwy, shape = cty)) +
+#  geom_point()
+# Error: A continuous variable can not be mapped to shape
+```
+
+----
+
+### Exercise 5
+Try mapping the same variable to multiple aesthetics; what do you observe? For intance, in the `displ` vs. `hwy` chart use `hwy` for size and color.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = hwy, size = displ)) +
+  geom_point()
+```
+
+----
+
+### Exercise 6
+What does the `stroke` aesthetic do? What shapes does it work with? (Hint: use `?geom_point`)
+
+Stroke changes the size of the border for shapes (21-25). These are filled shapes in which the color and size of the border can differ from that of the filled interior of the shape.
+
+For example:
+
+```{r}
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point(shape = 21, color = "black", fill = "white", size = 5, stroke = 5)
+```
+
+----
+
+### Exercise 7
+What happens if you map an aesthetic to something other than a variable name, like `aes(color = displ < 5)`?
+
+Aesthetics can also be mapped to expressions (code like `displ < 5`). It will create a temporary variable which takes values from the result of the expression. In this case, it is logical variable which is `TRUE` or `FALSE`. 
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, colour = displ < 5)) +
+  geom_point()
+```

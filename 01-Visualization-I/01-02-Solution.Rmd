@@ -1,0 +1,38 @@
+---
+title: "Solution"
+subtitle: "Introduction to `ggplot2` - Data Visualization - Part 1"
+output: html_notebook
+---
+
+1. How many rows are in `mpg`?
+2. How many columns?
+3. What does the `drv` variable describe? Read the help for `?mpg` to find out.
+4. Make a scatterplot of `hwy` vs `cyl`.
+5. What happens if you make a scatterplot of `class` vs `drv`? Why is the plot not useful?
+
+```{r}
+library(tidyverse)
+print(paste0("Number of rows: ", nrow(mpg)))
+print(paste0("Number of columns: ", ncol(mpg)))
+```
+
+One could also use `glimpse()`:
+
+```{r}
+glimpse(mpg)
+```
+
+
+```{r}
+?mpg
+```
+
+```{r}
+ggplot(data = mpg) + geom_point(mapping = aes(x=hwy, y=cyl))
+```
+```{r}
+ggplot(data = mpg, aes(x=class, y=drv)) + geom_point()
+```
+
+
+
