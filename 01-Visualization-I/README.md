@@ -42,7 +42,7 @@ sudo adduser <USERNAME>
 
 2. **Install packages:** From R run the following command to install the packages for all the users:
 
-> `install.packages(c("tidyverse", "openxlsx", "ggthemes", "nycflights13", "plotly", "maps"))`
+> `install.packages(c("tidyverse", "openxlsx", "ggthemes", "nycflights13", "plotly", "maps"), lib="/usr/local/lib/R/site-library")`
 
 **Note:** when asked to choose a mirror select **65** (Iowa, where our machine is located - us-central1). This could take several minutes (~15 minutes).
 
