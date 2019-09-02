@@ -1,0 +1,161 @@
+---
+title: "Data Visualization - Part 1"
+output: html_notebook
+---
+
+Data visualization involves the creation and study of the visual representation of data. To communicate information clearly and efficiently data visualization uses statistical graphics, plots, information graphics and other tools. Effective visualization helps users analyze and reason about data and evidence. It makes complex data more accessible, understandable and usable.
+
+**ggplot2** is the most popular package for data visualization in R. Created by Hadley Wickham, ggplot2 is an implementation of Leland Wilkinson's [Grammar of Graphics](https://www.springer.com/us/book/9780387245447)— a general scheme for data visualization which breaks up graphs into semantic components such as scales and layers. ggplot2 can serve as a replacement for the base graphics in R.
+
+### Table of Contents
+* Overview of ggplot2
+* First graph
+* The grammar of graphics
+
+## Overview of ggplot2
+
+In this notebook we will focus on ggplot2 and will try to cover some of its main functionalities. If you have followed the **Setup** notebook you should already have ggplot2 installed since it's a part of **tidyverse** library. Before being able to use a package we need to first load it into the environment by
+
+> `library(ggplot2)`
+
+Alternatively, one can load the entire tidyverse to include all of its core packages:
+
+```{r}
+# loading libraries
+library(tidyverse)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+These 8 packages are used in almost every data analysis in R. The last two lines are warnings that you can ignore for now.
+
+### First graph
+
+Let's use one of the datasets that come with `ggplot2` to make a graph and answer a simple question. 
+
+**Question**: Do cars with big engines use more fuel than cars with small engines?
+
+**dataset**: `mpg` - contains fuel economy data from 1999 and 2008 for 38 popular models of car. 
+
+Another way of calling a dataset that comes from a package is to first specify the package name followed by two colons, e.g. `ggplot2::mpg`. This is usually optional, but a good practice for extra clarity if needed.
+
+To see the content of `mpg` you can simply type
+
+> `mpg`
+
+in the console (or a notebook cell). To avoid getting too many rows back in the notebook I use `head()` function from base R to only load the first few rows. If you are using RStudio then by just typing `mpg` you should get the right amount of output that fits in your screen, it's because `mpg` is a `tibble`, we will learn more about `tibbles` later.
+
+```{r}
+head(mpg)
+```
+
+Among the variables in `mpg` are
+
+* `displ`, a car's engine size, in litres.
+* `hwy`, a car's fuel efficiency on the highway, in miles per gallon (mpg). A car with a low fuel efficiency consumes more fuel than a car with a high fuel efficiency when they travel the same distance.
+
+To access the help page and find out more about this dataframe use `?mpg` command or press **F1** while your cursor is on that word. A dataframe is a rectangular collection of variables (in the columns) and observations (in the rows).
+
+#### Creating a ggplot
+To make a plot using `mpg` dataset run this code to put `displ` on the x-axis and `hwy` on the y-axis:
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+The plot shows a negative relationship between engine size (`displ`) and fuel efficiency (`hwy`). In other words, cars with big engines use more fuel.
+
+With ggplot2, you begin a plot with the function `ggplot()`. `ggplot()` creates a coordinate system that you can add layers to. The first argument of `ggplot()` is the dataset to use in the graph. `ggplot(data = mpg)` creates an empty graph.
+
+You complete your graph by adding one or more layers to `ggplot()`. The function `geom_point()` adds a layer of points to your plot, aka scatterplot. ggplot2 comes with many geom functions that each add a different type of layer to a plot. You'll learn a whole bunch of them later.
+
+Each geom function in ggplot2 takes a `mapping` argument. This defines how variables in your dataset are mapped to visual properties. The `mapping` argument is always paired with `aes()`, and the `x` and `y` arguments of `aes()` specify which variables to map to the x and y axes. `ggplot()` looks for the mapped variable in the `data` argument, in this case, `mpg`.
+
+### The grammar of graphics
+
+As mentioned above ggplot2 breaks up graphs into semantic components such as scales and layers. For instance the graph we just plotted consists of the following three layers
+
+<center> ![](../png/3-layers-ggplot.png){width=400} </center>
+
+These three layers are the minimum requirements for the data to be visualized.
+
+**Data -**
+The source of information to be plotted. 
+
+> `ggplot(data = mpg)`
+
+This statement by itself would result in an empty canvas. In order to show the points we need the other two layers.
+
+**Aestetics -**
+For specifying the attributes of the plot. The aesthetics mapping describe how variables in the data are mapped to visual properties of the geometric objects. The `mapping` argument is always paired with `aes()`.
+
+> `mapping = aes(x = displ, y = hwy)`
+
+**Geometrics -**
+Specifies the geometric object to be used for data visualization. For the example above we have used `geom_point()` to show the data points in a scatterplot.
+
+> ```ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))``` 
+
+#### A graphing template
+We can use the following template which represents these 3 layers. Replace the bracketed sections in the code below with a dataset, a geom function, or a collection of mappings:
+
+> ```ggplot(data = <DATA>) + 
+  <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))```
+
+##### There are four more layers in ggplot2#####
+
+<center> ![](../png/layers-of-ggplot.png){width=400} </center>
+
+**Facets -**
+Allow us to visualize multiple groups of the same data within one canvas. For example, in our example one could group the cars by their `drv`
+
+* 4: Four-wheel drive
+* f: Front-wheel drive
+* r: Rear-wheel drive
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ drv, nrow = 2)
+```
+
+**Statistics**
+This layer is to summarize or transform the data before plotting it. For instance we can fit a line to the previous plot by `geom_smooth()`
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ drv, nrow = 2) +
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+```
+
+**Coordinates**
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ drv, nrow = 2) +
+  geom_smooth(mapping = aes(x = displ, y = hwy)) +
+  coord_cartesian(xlim = c(3, 6))
+```
+
+**Themes**
+
+There are two ways to set the theme.
+
+1. for each individual plot: add a theme layer (example below)
+2. for all the plots in the script: call function `theme_set()` and set the global theme inside the function.
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ drv, nrow = 2) +
+  geom_smooth(mapping = aes(x = displ, y = hwy)) +
+  coord_cartesian(xlim = c(3, 6)) +
+  theme_dark()
+```
+
+**ggthemes** package and other third party packages provides additional themes. You can also make your own theme.
