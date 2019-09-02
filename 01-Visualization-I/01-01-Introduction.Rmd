@@ -102,6 +102,7 @@ You can install new libraries (packages) in R by the `install.packages("PACKAGE_
 The majority of the packages that we will use throughout this bootcamp are part of the so-called *tidyverse* suite. [tidyverse](https://www.tidyverse.org/packages/) is a collection of R packages designed for data science.
 
 Core packages in *tidyverse*:
+
 * [ggplot2](http://ggplot2.tidyverse.org): for visualizing data
     * based on “A Layered Grammar of Graphics”
 * [dplyr](https://dplyr.tidyverse.org/): for manipulating data
@@ -124,23 +125,23 @@ Once the installation is finished you can try the `library(tidyverse)` command i
 We only need to install every new library once, but we need to load it every time we start a new R session.
 
 ## Other packages
-* openxlsx: for writing to an Excel file
+* openxlsx: writing to an Excel file
 
 > ```install.packages("openxlsx")```
 
-* ggthemes: for more themes
+* ggthemes: themes
 
 > `install.packages("ggthemes")`
 
-* nycflights13: for loading sample data, NYC flights in 2013
+* nycflights13: sample data - NYC flights in 2013
 
 > `install.packages("nycflights13")`
 
-* plotly: for interactive visualization
+* plotly: interactive visualization
 
 > `install.packages("plotly")`
 
-* maps: for plotting maps
+* maps: plotting maps
 
 > `install.packages("maps")`
 
