@@ -12,7 +12,7 @@ Besides `color`, one could also map `class` to other aesthetics such as `shape`,
 3. Use `class` as "alpha" (transparency) for the points.
 
 ```{r}
-# Your answer goes here
+# Your answer goes here 
 ```
 
 ----
