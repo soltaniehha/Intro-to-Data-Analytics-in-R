@@ -1,5 +1,6 @@
 ---
-title: "Data Visualization - Part I - Exercise"
+title: "Exercise"
+subtitle: "Introduction to `ggplot2` - Data Visualization - Part 1"
 output: html_notebook
 ---
 
