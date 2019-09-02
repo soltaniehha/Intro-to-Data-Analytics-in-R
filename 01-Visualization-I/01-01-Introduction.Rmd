@@ -1,4 +1,8 @@
-# Introduction
+---
+title: "Introduction"
+subtitle: "Data Visualization - Part 1"
+output: html_notebook
+---
 
 ---
 
