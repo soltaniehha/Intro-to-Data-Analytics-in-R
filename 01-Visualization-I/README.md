@@ -35,7 +35,18 @@ sudo adduser <USERNAME>
 
 **Note:** once asked for a fingerprint passphrase just hit Enter twice. This is not necessary.
 
-## Log-in to RStudio
+## Install Essential R Packages
+1. **Log into R:** From Cloud Shell, while logged into your instance, type the following to go to R as root:
+
+> `sudo -i R`
+
+2. **Install packages:** From R run the following command to install the packages for all the users:
+
+> `install.packages(c("tidyverse", "openxlsx", "ggthemes", "nycflights13", "plotly", "maps"))`
+
+**Note:** when asked to choose a mirror select **65** (Iowa, where our machine is located - us-central1). This could take several minutes (~15 minutes).
+
+## Sign in to RStudio
 1. If you just created your instance it is up and running and you can continue to the next step. If your instance is stopped you would need to "start" it before connecting to it. You can do it in two simple ways:
   * Go to your Compute Engine page, select the instance and click START.
   * From the Cloud Shell run the following command to start an instance called `rstudio`:
