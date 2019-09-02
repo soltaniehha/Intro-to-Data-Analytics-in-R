@@ -4,6 +4,8 @@ subtitle: "Data Visualization - Part 2"
 output: html_notebook
 ---
 
+<center> ![](../png/layers-of-ggplot.png){width=400} </center>
+
 Now that we have a general idea of all the seven layers of ggplot2 let's take a deeper dive into them. We will start with aesthetics.
 
 Looking back at the first graph we made, we see that there are a few car models that despite their engine size are relatively efficient (~25 mpg) and seem to fall out of the linear trend (blue circles). How can we explain these cars? 
