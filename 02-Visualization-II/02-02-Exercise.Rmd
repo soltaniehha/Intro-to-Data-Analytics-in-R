@@ -1,0 +1,19 @@
+---
+title: "Exercise"
+subtitle: "Statistics layer - Data Visualization - Part 5"
+output: html_notebook
+---
+
+
+### Exercise 1
+What is the default geom associated with `stat_summary()`? How could you rewrite the previous plot to use that geom function instead of the stat function?
+
+----
+
+### Exercise 2
+What does `geom_col()` do? How is it different to `geom_bar()`?
+
+-----
+
+### Exercise 3
+What variables does `stat_smooth()` compute? What parameters control its behavior?
