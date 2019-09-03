@@ -38,7 +38,7 @@ sudo adduser <USERNAME>
 ## Install Essential R Packages
 From Cloud Shell, while logged into your instance, type the following to install the packages for all the users:
 
-> `sudo R -e 'install.packages(c("tidyverse", "openxlsx", "ggthemes", "nycflights13", "plotly", "maps"), lib="/usr/local/lib/R/site-library", repos="http://cran.us.r-project.org")'`
+> `sudo R -e 'install.packages(c("tidyverse", "openxlsx", "ggthemes", "nycflights13", "plotly", "maps", "tinytex"), lib="/usr/local/lib/R/site-library", repos="http://cran.us.r-project.org")'`
 
 **Note:** This could take several minutes (~15 minutes).
 
