@@ -1,0 +1,47 @@
+---
+title: "Coordinates"
+subtitle: "Data Visualization - Part 6"
+output: html_notebook
+---
+
+```{r include=FALSE}
+# loading libraries
+library(tidyverse)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+<center> ![](../png/layers-of-ggplot.png){width=400} </center>
+
+The default coordinate system is the Cartesian coordinate system where the x and y positions act independently to determine the location of each point. There are a number of other coordinate systems that are occasionally helpful.
+
+* `coord_flip()`
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot()
+
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot() +
+  coord_flip()
+```
+
+* `coord_polar()`
+
+```{r}
+bar <- ggplot(data = diamonds) + 
+  geom_bar(
+    mapping = aes(x = cut, fill = cut), 
+    show.legend = FALSE,
+    width = 1
+  ) + 
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+bar + coord_flip()
+```
+
+```{r}
+bar + coord_polar()
+```
