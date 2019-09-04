@@ -1,0 +1,44 @@
+---
+title: "Exercise"
+subtitle: "Statistics layer - Data Visualization - Part 5"
+output: html_notebook
+---
+
+
+### Exercise 1
+What is the default geom associated with `stat_summary()`? How could you rewrite the previous plot to use that geom function instead of the stat function?
+
+----
+
+### Exercise 2
+What does `geom_col()` do? How is it different to `geom_bar()`?
+
+-----
+
+### Exercise 3
+What variables does `stat_smooth()` compute? What parameters control its behavior?
+
+----
+
+### Exercise 4
+What is the problem with this plot? How could you improve it?
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point()
+```
+
+----
+
+### Exercise 5
+Use `position_jitter()` to modify the amount of jittering. What parameters in `geom_jitter()` control the amount of jittering?
+
+----
+
+### Exercise 6
+Compare `geom_jitter()` with `geom_count()`.
+
+----
+
+### Exercise 7
+We haven't plotted a boxplot yet, check out the documentation for `geom_boxplot()` and look at some the examples. What's the default position adjustment for `geom_boxplot()`? Create a visualization of the mpg dataset that demonstrates it.

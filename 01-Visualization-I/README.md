@@ -38,9 +38,13 @@ sudo adduser <USERNAME>
 ## Install Essential R Packages
 From Cloud Shell, while logged into your instance, type the following to install the packages for all the users:
 
-> `sudo R -e 'install.packages(c("tidyverse", "openxlsx", "ggthemes", "nycflights13", "plotly", "maps"), lib="/usr/local/lib/R/site-library", repos="http://cran.us.r-project.org")'`
+> `sudo R -e 'install.packages(c("tidyverse", "openxlsx", "ggthemes", "nycflights13", "plotly", "maps", "tinytex"), lib="/usr/local/lib/R/site-library", repos="http://cran.us.r-project.org")'`
 
 **Note:** This could take several minutes (~15 minutes).
+
+Ones finished run the following:
+
+> `sudo R -e 'tinytex::install_tinytex()'`
 
 ## Sign in to RStudio
 1. If you just created your instance it is up and running and you can continue to the next step. If your instance is stopped you would need to "start" it before connecting to it. You can do it in two simple ways:

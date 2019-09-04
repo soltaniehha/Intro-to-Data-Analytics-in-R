@@ -17,8 +17,6 @@ output: html_notebook
     * [RStudio](#install_RStudio)
     * [Install Libraries](#install_libraries)
 * [Downloading course material](#Downloading-course-material)
-* Alternative ways to run the code
-    * [Binder](#binder)
 
 ---
 
@@ -170,26 +168,4 @@ Both these methods work, the one I would recommend is to clone this repository f
 2. Select Version Control and then Git
 3. In the Repository URL paste `https://github.com/soltaniehha/Intro-to-Data-Analytics-in-R.git` and call its name Intro-to-Data-Analytics-in-R (or any name of your choice)
 4. Select the location you would like this repository to be stored and then click Create Project
-5. Now everytime the project (repo) gets updated you can go to the Git tab and "Pull" the latest version.
-
---- 
-
-# Alternative Environments
-
-All the code shared on the upcoming notebooks can be run by copy/paste into RStudio on your personal computer. Optionally, you can use a **Binder** environment that I have created for this course. It is as simple as clicking on a URL, the details are in the next section.
-
-<a class="anchor" id="binder"></a>
-
-## Binder <img src="../png/binder_logo.png" width="150px" align="right">
-
-**Binder** makes it simple to generate reproducible computing environments from a Git repository. Binder uses the BinderHub technology to generate a Docker image from this repository. All the notebooks in the Git repository are accessible from Binder. You can spin off your own Binder container by going to https://mybinder.org/v2/gh/soltaniehha/Intro-to-Data-Analytics-in-R.git/master or by clicking on the binder logo below:
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/soltaniehha/Intro-to-Data-Analytics-in-R.git/master)
-
-BinderHub will start a new **temporary** container for you. This is *your* container, but have in mind that this is temporary and there are limitations on how long you can use it. Binder will automatically shut down user sessions that have more than 10 minutes of inactivity (if you leave your window open, this will be counted as "activity"). Binder aims to provide at last 12 hours of session time per user session. So, have this in mind that your work will be deleted after your session expires. It is mainly designed to follow along a lecture, and not to be used for running homework/project code. By having that in mind one could use it cautiously by exporting code and data at the end of each work session and before it expires. Though, it is considered risky and you could potentially loose your work.
-
-Your container comes pre-installed with all the packages that we will be using throughout this course, so no need to install them, just load them. It allows you to install new libraries if you need to. Feel free to play around and do whatever you like in your container, it's your own temporary cloud environment and won't affect the work of your classmates. If anything breaks you can simply close the tab that you were running binder and open a new one, starting with a fresh environment.
-
-Your Binder comes with an RStudio in your browser. To start a new RStudio session through binder click on *RStudio Session* under *New*:
-
-<center> ![](../png/rstudio_ui_binder.png){width=350} </center>
+5. Now every time the project (repo) gets updated you can go to the Git tab and "Pull" the latest version.
