@@ -1,19 +1,40 @@
 ---
 title: "Exercise"
-subtitle: "Statistics layer - Data Visualization - Part 5"
+subtitle: "Facets - Data Visualization - Part 3"
 output: html_notebook
 ---
 
-
 ### Exercise 1
-What is the default geom associated with `stat_summary()`? How could you rewrite the previous plot to use that geom function instead of the stat function?
+Read `?facet_wrap`. What does `nrow` do? What does `ncol` do? What other options control the layout of the individual panels? Why doesn't `facet_grid()` have `nrow` and `ncol` arguments?
+
+To answer these questions try to modify the plots from the notebook by changing the parameters.
 
 ----
 
 ### Exercise 2
-What does `geom_col()` do? How is it different to `geom_bar()`?
+What do the empty cells in plot with `facet_grid(drv ~ cyl)` mean? How do they relate to this plot?
 
------
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = drv, y = cyl))
+```
+
+----
 
 ### Exercise 3
-What variables does `stat_smooth()` compute? What parameters control its behavior?
+What plots does the following code make? What does `.` do?
+
+```
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl)
+```
+
+----
+
+### Exercise 4
+What happens if you facet on a continuous variable?

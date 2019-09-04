@@ -1,33 +1,75 @@
 ---
 title: "Exercise"
-subtitle: "Geometries - Data Visualization - Part 4"
+subtitle: "Aesthetics - Data Visualization - Part 2"
 output: html_notebook
 ---
 
 ### Exercise 1
-What does `na.rm = FALSE` in `geom_point()` do?
+Besides `color`, one could also map `class` to other aesthetics such as `shape`, `size`, and `alpha`. As a practice, using the code from the notebook try to regenerate the plot experimenting with different mappings. For instance:
+
+1. Use `fl` as "shape" for your scatterplot.
+2. Use `cyl` as the "size" of your points.
+3. Use `class` as "alpha" (transparency) for the points.
+
+```{r}
+# Your answer goes here 
+```
 
 ----
 
 ### Exercise 2
-What does `show.legend = FALSE` do? Show with an example
+What's gone wrong with this code? Why are the points not blue?
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+
+```{r}
+# Your answer goes here
+```
 
 ----
 
 ### Exercise 3
-Will these two graphs look different? Why/why not?
+Which variables in `mpg` are categorical? Which variables are continuous? (Hint: type `?mpg` to read the documentation for the dataset). How can you see this information when you run `mpg`?
 
-> `ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +`  
-  `  geom_point() +`  
-  `  geom_smooth()`  
-  
-> `ggplot() + `  
-  `geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + `  
-  `geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))`
+```{r}
+# Your answer goes here
+```
 
 ----
 
 ### Exercise 4
-Recreate the R code necessary to generate the following graphs:
+Map a continuous variable to `color`, `size`, and `shape`. How do these aesthetics behave differently for categorical vs. continuous variables?
 
-<img src="../png/exercise15-ggplot.png" width="700px" align="center">
+```{r}
+# Your answer goes here
+```
+
+----
+
+### Exercise 5
+Try mapping the same variable to multiple aesthetics; what do you observe? For intance, in the displ vs. hwy chart use hwy for size and color.
+
+```{r}
+# Your answer goes here
+```
+
+----
+
+### Exercise 6
+What does the `stroke` aesthetic do? What shapes does it work with? (Hint: use `?geom_point`)
+
+```{r}
+# Your answer goes here
+```
+
+----
+
+### Exercise 7
+What happens if you map an aesthetic to something other than a variable name, like `aes(color = displ < 5)`?
+
+```{r}
+# Your answer goes here
+```

@@ -82,3 +82,96 @@ ggplot(data = diamonds) +
     fun.y = median
   )
 ```
+
+## Position adjustments
+There’s one more piece of magic associated with bar charts. You can colour a bar chart using either the color aesthetic, or, more usefully, fill:
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, color = cut))
+```
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = cut))
+```
+
+Note what happens if you map the fill aesthetic to another variable, like `clarity`: the bars are automatically stacked
+
+```{r}
+# Fill with clarity
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity))
+```
+
+Bring your own colors:
+
+```{r}
+# Custom color
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity)) +
+  scale_fill_manual(values = c("#41f4f4", "#41d9f4", "#41bbf4", "#418ef4", "#415ef4", "#6a41f4", "#9741f4", "#f441f1"))
+```
+
+The stacking is performed automatically by the position adjustment specified by the `position` argument. If you don't want a stacked bar chart, you can use one of three other options: `"identity"`, `"dodge"` or `"fill"`.
+
+* `position = "identity"` will place each object exactly where it falls in the context of the graph. This is not very useful for bars, because it overlaps them. To see that overlapping we can make the bars slightly transparent by setting alpha to a small value:
+
+```{r}
+# position = "identity"
+ggplot(data = diamonds, mapping = aes(x = cut, fill = clarity)) + 
+  geom_bar(alpha = 1/5, position = "identity")
+```
+
+* `position = "fill"` works like stacking, but makes each set of stacked bars the same height. This makes it easier to compare proportions across groups:
+
+```{r}
+# position = "fill"
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "fill")
+```
+
+* `position = "dodge"` places overlapping objects directly beside one another:
+
+```{r}
+# position = "dodge"
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "dodge") +
+  scale_fill_manual(values = c("#41f4f4", "#41d9f4", "#41bbf4", "#418ef4", "#415ef4", "#6a41f4", "#9741f4", "#f441f1"))
+```
+
+----
+
+### Histogram
+A histogram is an accurate representation of the distribution of numerical data.
+
+```{r}
+ggplot(diamonds, aes(price)) +
+  geom_histogram(binwidth = 500, fill = "black", color = "white")
+```
+
+----
+
+### Jitter
+There's one other type of adjustment that's not useful for bar charts, but it can be very useful for scatterplots. If you recall our very first plot we were looking at a dataset with 234 observations, but in fact the chart shows only 126 points
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+The values of `hwy` and `displ` are rounded so the points appear on a grid and many points overlap each other. This problem is known as **overplotting**. To show all the points we can add `position = "jitter"` to the function and `ggplot()` will automatically shift the point just enough that they are visible.
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy), position = "jitter")
+```
+
+We can also add some transparency to make the points more visible, using `alpha`
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy), position = "jitter", alpha = 1/2)
+```
+
+To learn more about a position adjustment, look up the help page associated with each adjustment: `?position_dodge`, `?position_fill`, `?position_identity`, `?position_jitter`, and `?position_stack`.

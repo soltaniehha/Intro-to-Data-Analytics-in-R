@@ -1744,7 +1744,7 @@ summary {
 
 
 <h1 class="title toc-ignore">Exercise</h1>
-<h3 class="subtitle">Statistics layer - Data Visualization - Part 5</h3>
+<h3 class="subtitle">Facets - Data Visualization - Part 3</h3>
 
 </div>
 
@@ -1752,21 +1752,45 @@ summary {
 <!-- rnb-text-begin -->
 <div id="exercise-1" class="section level3">
 <h3>Exercise 1</h3>
-<p>What is the default geom associated with <code>stat_summary()</code>? How could you rewrite the previous plot to use that geom function instead of the stat function?</p>
+<p>Read <code>?facet_wrap</code>. What does <code>nrow</code> do? What does <code>ncol</code> do? What other options control the layout of the individual panels? Why doesn’t <code>facet_grid()</code> have <code>nrow</code> and <code>ncol</code> arguments?</p>
+<p>To answer these questions try to modify the plots from the notebook by changing the parameters.</p>
 <hr />
 </div>
 <div id="exercise-2" class="section level3">
 <h3>Exercise 2</h3>
-<p>What does <code>geom_col()</code> do? How is it different to <code>geom_bar()</code>?</p>
+<p>What do the empty cells in plot with <code>facet_grid(drv ~ cyl)</code> mean? How do they relate to this plot?</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2dwbG90KGRhdGEgPSBtcGcpICsgXG4gIGdlb21fcG9pbnQobWFwcGluZyA9IGFlcyh4ID0gZHJ2LCB5ID0gY3lsKSlcbmBgYCJ9 -->
+<pre class="r"><code>ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = drv, y = cyl))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-plot-begin eyJjb25kaXRpb25zIjpbXSwiaGVpZ2h0Ijo0MzAuNzc4Nywic2l6ZV9iZWhhdmlvciI6MCwid2lkdGgiOjY5N30= -->
+<p><img src="data:image/png;base64,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" /></p>
+<!-- rnb-plot-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <hr />
 </div>
 <div id="exercise-3" class="section level3">
 <h3>Exercise 3</h3>
-<p>What variables does <code>stat_smooth()</code> compute? What parameters control its behavior?</p>
+<p>What plots does the following code make? What does <code>.</code> do?</p>
+<pre><code>ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl)</code></pre>
+<hr />
+</div>
+<div id="exercise-4" class="section level3">
+<h3>Exercise 4</h3>
+<p>What happens if you facet on a continuous variable?</p>
 <!-- rnb-text-end -->
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiRXhlcmNpc2UiCnN1YnRpdGxlOiAiU3RhdGlzdGljcyBsYXllciAtIERhdGEgVmlzdWFsaXphdGlvbiAtIFBhcnQgNSIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKCiMjIyBFeGVyY2lzZSAxCldoYXQgaXMgdGhlIGRlZmF1bHQgZ2VvbSBhc3NvY2lhdGVkIHdpdGggYHN0YXRfc3VtbWFyeSgpYD8gSG93IGNvdWxkIHlvdSByZXdyaXRlIHRoZSBwcmV2aW91cyBwbG90IHRvIHVzZSB0aGF0IGdlb20gZnVuY3Rpb24gaW5zdGVhZCBvZiB0aGUgc3RhdCBmdW5jdGlvbj8KCi0tLS0KCiMjIyBFeGVyY2lzZSAyCldoYXQgZG9lcyBgZ2VvbV9jb2woKWAgZG8/IEhvdyBpcyBpdCBkaWZmZXJlbnQgdG8gYGdlb21fYmFyKClgPwoKLS0tLS0KCiMjIyBFeGVyY2lzZSAzCldoYXQgdmFyaWFibGVzIGRvZXMgYHN0YXRfc21vb3RoKClgIGNvbXB1dGU/IFdoYXQgcGFyYW1ldGVycyBjb250cm9sIGl0cyBiZWhhdmlvcj8K</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiRXhlcmNpc2UiCnN1YnRpdGxlOiAiRmFjZXRzIC0gRGF0YSBWaXN1YWxpemF0aW9uIC0gUGFydCAzIgpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sKLS0tCgojIyMgRXhlcmNpc2UgMQpSZWFkIGA/ZmFjZXRfd3JhcGAuIFdoYXQgZG9lcyBgbnJvd2AgZG8/IFdoYXQgZG9lcyBgbmNvbGAgZG8/IFdoYXQgb3RoZXIgb3B0aW9ucyBjb250cm9sIHRoZSBsYXlvdXQgb2YgdGhlIGluZGl2aWR1YWwgcGFuZWxzPyBXaHkgZG9lc24ndCBgZmFjZXRfZ3JpZCgpYCBoYXZlIGBucm93YCBhbmQgYG5jb2xgIGFyZ3VtZW50cz8KClRvIGFuc3dlciB0aGVzZSBxdWVzdGlvbnMgdHJ5IHRvIG1vZGlmeSB0aGUgcGxvdHMgZnJvbSB0aGUgbm90ZWJvb2sgYnkgY2hhbmdpbmcgdGhlIHBhcmFtZXRlcnMuCgotLS0tCgojIyMgRXhlcmNpc2UgMgpXaGF0IGRvIHRoZSBlbXB0eSBjZWxscyBpbiBwbG90IHdpdGggYGZhY2V0X2dyaWQoZHJ2IH4gY3lsKWAgbWVhbj8gSG93IGRvIHRoZXkgcmVsYXRlIHRvIHRoaXMgcGxvdD8KCmBgYHtyfQpnZ3Bsb3QoZGF0YSA9IG1wZykgKyAKICBnZW9tX3BvaW50KG1hcHBpbmcgPSBhZXMoeCA9IGRydiwgeSA9IGN5bCkpCmBgYAoKLS0tLQoKIyMjIEV4ZXJjaXNlIDMKV2hhdCBwbG90cyBkb2VzIHRoZSBmb2xsb3dpbmcgY29kZSBtYWtlPyBXaGF0IGRvZXMgYC5gIGRvPwoKYGBgCmdncGxvdChkYXRhID0gbXBnKSArIAogIGdlb21fcG9pbnQobWFwcGluZyA9IGFlcyh4ID0gZGlzcGwsIHkgPSBod3kpKSArCiAgZmFjZXRfZ3JpZChkcnYgfiAuKQoKZ2dwbG90KGRhdGEgPSBtcGcpICsgCiAgZ2VvbV9wb2ludChtYXBwaW5nID0gYWVzKHggPSBkaXNwbCwgeSA9IGh3eSkpICsKICBmYWNldF9ncmlkKC4gfiBjeWwpCmBgYAoKLS0tLQoKIyMjIEV4ZXJjaXNlIDQKV2hhdCBoYXBwZW5zIGlmIHlvdSBmYWNldCBvbiBhIGNvbnRpbnVvdXMgdmFyaWFibGU/Cg==</div>
 
 
 
@@ -1813,7 +1837,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("02-02-Exercise.Rmd");
+  window.initializeSourceEmbed("01-04-Exercise.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>
