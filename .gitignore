@@ -1,6 +1,7 @@
 *-Solution*
-sandbox
-Rmd
+/sandbox/*
+!/sandbox/png
+/Rmd
 
 # History files
 .Rhistory
