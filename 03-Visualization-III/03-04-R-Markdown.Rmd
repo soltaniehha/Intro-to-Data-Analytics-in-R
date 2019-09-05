@@ -1,0 +1,147 @@
+---
+title: "R Markdown"
+output: html_notebook
+
+---
+
+
+## Introduction
+R Markdown provides a unified authoring framework for data science, combining your code, its results, and your commentary all from RStudio. R Markdown documents are reproducible and can be exported as many typical document formats such as PDF, HTML, slide shows, and more.
+
+R Markdown files are designed to be used in three ways:
+
+1. For communicating to decision makers, who want to focus on the conclusions, not the code behind the analysis.
+2. For collaborating with other data scientists (including future you!).
+3. As an environment in which to do data science, as a modern day lab notebook where you can capture not only what you did, but also what you were thinking.
+
+R Markdown uses a number of R packages as well as some external tools. Because of this our regular help, `?`, will not be as useful as you saw for other packages. To get help use the following resources:
+
+* *rmarkdown-2.0* Cheatsheet 
+* *rmarkdown-reference*
+
+Both of these documents can be found under the **cheatsheets** folder. You can also access them through RStudio > Help > Cheatsheets, or just go to [rstudio.com/cheatsheets](http://rstudio.com/cheatsheets).
+
+We will need **rmarkdown** package. RStudio automatically loads it when needed.
+
+----
+
+## R Markdown basics
+This is an R Markdown file, a plain text file that has the extension *.Rmd*:
+
+It contains three important types of content:
+
+1. An (optional) **YAML header** surrounded by `---`.
+2. Chunks of R code surrounded by \` \` \` or \`.
+3. Text mixed with simple text formatting like `# heading` and `_italics_`.
+
+When you open a .Rmd file, you get a notebook interface where code and output are mixed together. You can run each code chunk by Cmd/Ctrl + Shift + Enter or by clicking on the Run button. RStudio executes the code and displays the results "inline" with the code:
+
+----
+
+## Diamond Dataframe
+
+```{r setup, include=FALSE}
+library(tidyverse)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+### From `ggplot2`
+We have `r nrow(diamonds)` diamonds in this dataset. Only `r sum(diamonds$carat>2.5)` are bigger than 2.5 carats. Here are a few rows of the dataframe:
+
+```{r}
+knitr::kable(head(diamonds))
+```
+
+The distribution of these diamonds is shown below:
+```{r}
+ggplot(diamonds) +
+  geom_density(aes(x = carat), adjust = 1/5)
+```
+
+----
+
+To produce a complete report containing all text, code, and results, click "Knit" or press Cmd/Ctrl + Shift + K. You can also do this programmatically with `rmarkdown::render("rmd-sample.Rmd")`. This will display the report in the viewer pane, and create a self-contained HTML file that you can share with others.
+
+----
+
+When we **knit** the document **knitr** library will run all the code cells and convert it into a markdown (.md) file. This file then will be used by **pandoc** package to convert it to a wide variety of formats. The knit button will convert your document to the first format listed under it. If you click on the down arrow you can select a different format:
+
+<center> ![](../png/knit.png){width=400} </center>
+
+To get started with your own .Rmd file, select File > New File > R Markdown… in the menu bar. RStudio will launch a wizard that you can use to pre-populate your file with useful content that reminds you how the key features of R Markdown work.
+
+## Text formatting with Markdown
+Markdown is designed to be easy to read and easy to write. Here are some of the most common syntax for formatting text:
+
+*Italic*
+
+**Bold**
+
+# Heading 1
+
+## Heading 2
+
+[Boston University](https://www.bu.edu/)
+
+![](../png/Terriers_logo.png){width=80}
+
+> *If you can't explain it simply, you don't understand it well enough.*
+  Albert Einstein
+
+* List
+
+1. One
+
+Horizontal Rule
+
+---
+
+`Inline code` with backticks
+
+```
+# code block
+nrow(diamons)  # note that this will not run, but appear as code in your notebook
+```
+
+| Tables   |      Are      |  Cool |
+|----------|:-------------:|------:|
+| col 1 is |  left-aligned | $1600 |
+| col 2 is |    centered   |   $12 |
+| col 3 is | right-aligned |    $1 |
+
+----
+
+## Code chunks
+Chunks can be given an optional name. One of the advantages of using names for chunks is that you can navigate through your document by selecting the appropriate chunk name from the bottom of the code.
+
+There is one name that has special behavior: `setup`. RStudio will make sure to run this chunk automatically before running any other chunk, if it's not run already.
+
+**Chunk Options:**
+
+* `eval = FALSE`: prevents code from being evaluated. Hence nothing will be printed. This is useful for displaying example code, or for disabling a large block of code without commenting each line.
+* `include = FALSE` runs the code, but doesn't show the code or results in the final document. Use this for setup code that you don't want cluttering your report with.
+* `echo = FALSE` prevents code, but not the results from appearing in the finished file. Use this when writing reports aimed at people who don't want to see the underlying R code.
+* `message = FALSE` or `warning = FALSE` prevents messages or warnings from appearing in the finished file.
+
+To change these options globally use `knitr::opts_chunk$set()`. For instance:
+
+```{r}
+knitr::opts_chunk$set(
+  echo = FALSE
+)
+```
+
+**Table**
+
+As we saw in the example above we can print a good looking table by `knitr::kable()`:
+
+This was just a very brief introduction to R Markdown. For learning more about its functionalities check out 
+
+* chapters 27-30 of *R For Data Science*, by Hadley Wickham.
+* [rmarkdown.rstudio.com](http://rmarkdown.rstudio.com)
+* Cheatsheets located in cheatsheet folder
+
+### Templates
+You can also download templates for many different document types such as dashboards, websites, books, presentations, and more from: [rmarkdown.rstudio.com/gallery.html](https://rmarkdown.rstudio.com/gallery.html)
