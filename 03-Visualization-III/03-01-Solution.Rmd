@@ -1,20 +1,174 @@
 ---
 title: "Solution"
-subtitle: "Coordinates - Data Visualization - Part 5"
+subtitle: "Statistics layer - Data Visualization - Part 5"
 output: html_notebook
 ---
 
+
 ### Exercise 1
-What does `labs()` do? Read the documentation.
+What is the default geom associated with `stat_summary()`? How could you rewrite the previous plot to use that geom function instead of the stat function?
+
+**Answer**
+
+Previous plot:
+
+```{r}
+ggplot(data = diamonds) + 
+  stat_summary(
+    mapping = aes(x = cut, y = depth),
+    fun.ymin = min,
+    fun.ymax = max,
+    fun.y = median
+  )
+```
+
+
+The default geom for `stat_summary()` is `geom_pointrange()` (see the `stat`) argument.
+
+But, the default stat for `geom_pointrange()` is `identity()`, so use `geom_pointrange(stat = "summary")`.
+
+```{r}
+ggplot(data = diamonds) +
+  geom_pointrange(
+    mapping = aes(x = cut, y = depth),
+    stat = "summary",
+  )
+```
+
+The default message says that `stat_summary()` uses the mean and sd to calculate the point, and range of the line. So lets use the previous values of `fun.ymin`, `fun.ymax`, and `fun.y`:
+
+```{r}
+ggplot(data = diamonds) +
+  geom_pointrange(
+    mapping = aes(x = cut, y = depth),
+    stat = "summary",
+    fun.ymin = min,
+    fun.ymax = max,
+    fun.y = median
+  )
+```
 
 ----
 
 ### Exercise 2
-What does the plot below tell you about the relationship between city and highway mpg? Why is `coord_fixed()` important? What does `geom_abline()` do?
+What does `geom_col()` do? How is it different to `geom_bar()`?
+
+**Answer**
+
+The geom_col() function has different default stat than geom_bar(). The default stat of geom_col() is stat_identity(), which leaves the data as is. The geom_col() function expects that the data contains x values and y values which represent the bar height.
+
+The default stat of geom_bar() is stat_bin(). The geom_bar() function only expects an x variable. The stat, stat_bin(), preprocesses input data by counting the number of observations for each value of x. The y aesthetic uses the values of these counts.
+
+For instance, we can "reproduce" the column chart from the notebook by `geom_col()`. It is slightly different since we are using a random generator: 
+
+```{r}
+demo <- data.frame(X=c("a","b","c","d"),
+           Y=sample(5:20, 4, replace=FALSE))
+```
+
+```{r}
+ggplot(data = demo) +
+  geom_col(mapping = aes(x = X, y = Y))
+```
+
+
+-----
+
+### Exercise 3
+What variables does `stat_smooth()` compute? What parameters control its behavior?
+
+**Answer**
+
+The function `stat_smooth()` calculates the following statistics:
+
+* `y`: predicted value
+* `ymin`: lower value of the confidence interval
+* `ymax`: upper value of the confidence interval
+* `se`: standard error
+
+> stat_smooth(mapping = NULL, data = NULL, geom = "smooth",  
+  position = "identity", ..., method = "auto", formula = y ~ x,  
+  se = TRUE, n = 80, span = 0.75, fullrange = FALSE, level = 0.95,  
+  method.args = list(), na.rm = FALSE, show.legend = NA,  
+  inherit.aes = TRUE)
+  
+The parameters that control the behavior of stat_smooth() include
+
+* `method`: the method used to
+* `formula`: the formula are parameters such as method which determines which method is used to calculate the predictions and confidence interval, and some other arguments that are passed to that.
+* `na.rm`
+
+----
+
+
+### Exercise 4
+What is the problem with this plot? How could you improve it?
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point()
+```
+
+**Answer**
 
 ```{r}
 ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
-  geom_point() + 
-  geom_abline() +
-  coord_fixed()
+  geom_point(position = "jitter", alpha = 1/2)
+```
+
+
+----
+
+### Exercise 5
+Use `position_jitter()` to modify the amount of jittering. What parameters in `geom_jitter()` control the amount of jittering?
+
+**Answer**
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point(position = position_jitter(width = 0))
+```
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point(position = position_jitter(height = 0))
+```
+
+----
+
+### Exercise 6
+Compare `geom_jitter()` with `geom_count()`.
+
+**Answer**
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_jitter()
+```
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_count()
+```
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy, color = class)) +
+  geom_count(alpha = 1/2)
+```
+
+----
+
+### Exercise 7
+We haven't plotted a boxplot yet, check out the documentation for `geom_boxplot()` and look at some the examples. What's the default position adjustment for `geom_boxplot()`? Create a visualization of the mpg dataset that demonstrates it.
+
+**Answer**
+
+```{r}
+ggplot(data = mpg, aes(x = drv, y = hwy)) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(data = mpg, aes(x = drv, y = hwy, colour = class)) +
+  geom_boxplot()
 ```
