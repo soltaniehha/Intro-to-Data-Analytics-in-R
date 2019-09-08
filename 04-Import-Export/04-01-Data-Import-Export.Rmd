@@ -1,5 +1,6 @@
 ---
-title: "Data Import/Export"
+title: "CSV & Excel Read/Write"
+subtitle: "Data Import/Export"
 output: html_notebook
 ---
 
@@ -111,27 +112,6 @@ read_csv("1,2,3\n4,5,6", col_names = c("x", "y", "z"))
 
 ---
 
-### Exercise 1
-Sometimes strings in a CSV file contain commas. To prevent them from causing problems they need to be surrounded by a quoting character, like `"` or `'`. By convention, `read_csv()` assumes that the quoting character will be `"`, and if you want to change it, you'll need to use `read_delim()` instead. What arguments do you need to specify to read the following text into a data frame?
-
-> "x,y  
-1,'a,b'"
-
----
-
-### Exercise 2
-Identify what is wrong with each of the following inline CSV files. What happens when you run the code?
-
-> `read_csv("a,b\n1,2,3\n4,5,6")`
-
-> `read_csv("a,b,c\n1,2\n1,2,3,4")`
-
-> `read_csv("a,b\n1,2\na,b")`
-
-> `read_csv("a;b\n1;3")`
-
----
-
 ## Writing to a file
 Similar to how we read a file from disk we can write one. We can use `write_csv()`, `write_delim()`, and other functions depending on our need. Earlier in this notebook we created `calDf`, a data frame from an inline text which was delimited by "|". Let's write this data frame to file, we can use any of the common delimiters, I pick CSV here:
 
@@ -153,80 +133,66 @@ calDfNew
 
 ## Read Excel files
 
+We will be using package readxl from tidyverse, but is not a core package so it needs to be loaded explicitly:
 
 ```{r}
 library(readxl)  # for reading Excel files
 ```
-We will be using package readxl from tidyverse, but is not a core package so it needs to be loaded explicitly which we did at the top of this notebook. readxl comes with some sample files, we can access to a list of these files by `readxl_example()`
+
+We can check out the sheet names with `excel_sheets()`:
 
 ```{r}
-readxl_example()
-```
-
-Let's get the path for one of these sample files by giving the name of the sample to `readxl_example()`
-
-```{r}
-xlsExamplePath <- readxl_example('datasets.xlsx')
-xlsExamplePath
-```
-
-This object is nothing but a path to the file, now having this path we can check out the sheets names with `excel_sheets()`:
-
-```{r}
-excel_sheets(xlsExamplePath)
+myExcelPath <- "../data/datasets.xlsx"
+excel_sheets(myExcelPath)
 ```
 
 and read any of these sheets into a data frame by `read_excel()`:
 
 ```{r}
-mtcarsDf <- read_excel(xlsExamplePath, sheet = 'mtcars')
-print(mtcarsDf)
+mtcarsDf <- read_excel(myExcelPath, sheet = 'mtcars')
+mtcarsDf
 ```
 
 if `sheet` parameter is not specified it'll go to the default which is the first sheet.
 
-We can read only a subset of the cell by an Excel-specified notation:
+We can read only a subset of the cells by an Excel-specified notation:
 
 ```{r}
-read_excel(xlsExamplePath, range = "C1:E4")
+read_excel(myExcelPath, range = "C1:E4")
 ```
 
 ```{r}
-head(read_excel(xlsExamplePath, range = cell_cols("B:D")))
+read_excel(myExcelPath, range = cell_cols("B:D"))
 ```
 
 ```{r}
-read_excel(xlsExamplePath, range = "mtcars!B1:D5")
+read_excel(myExcelPath, range = "mtcars!B1:D5")
 ```
 
 ---
 
 ## Write to an Excel file
 
+tidyverse doesn't have a package for writing to Excel files. We will use `write.xlsx()` from **openxlsx**. This package needs to be installed and loaded. Follow the instructions on the setup notebook for installation:
+
 ```{r}
 library(openxlsx)  # for writing to Excel files
 ```
 
-tidyverse doesn't have a package for writing to an Excel file. We will use `write.xlsx()` from **openxlsx**. This package needs to be installed and loaded. Follow the instructions on the setup notebook for installation.
-
-R base comes with sample data frames (e.g., iris, mtcars), let's write some of them into an Excel file:
+Let's write some of the data frames we have worked with into an Excel file:
 
 ```{r}
-l <- list(iris = iris, mtcars = mtcars, chickwts = chickwts, quakes = quakes)
-openxlsx::write.xlsx(l, file = "../tmp/datasets.xlsx")
+l <- list(mpg=mpg, diamonds=diamonds, iris=iris)
+openxlsx::write.xlsx(l, file = "myNewDatasets.xlsx")
 ```
 
 Reminder: `openxlsx::` is optional, just a good practice for showing that unlike all of the other packages used in this notebook `write.xlsx()` is not from tidyverse.
 
-### Practice
-Run the last command to create and populate an Excel file. Pick one or two sheets from the `.xlsx` file that we just created and read them into your R memory. Try to read different cuts using Excel notation discussed above.
-
-```{r}
-# Your code goes here
-```
+---
 
 ### Other types of data
 * **haven** reads SPSS, Stata, and SAS files
 * **DBI**, along with a database specific backend (e.g. RMySQL, RSQLite, RPostgreSQL etc) allows you to run SQL queries against a database and return a data frame
 * For hierarchical data: use **jsonlite** for json, and **xml2** for XML
+* **bigrquery** package allows read/write from/to BigQuery tables.
 
