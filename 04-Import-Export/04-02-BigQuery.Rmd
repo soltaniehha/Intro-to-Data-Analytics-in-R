@@ -3,6 +3,14 @@ title: "BigQuery Connection"
 output: html_notebook
 ---
 
+```{r include=FALSE}
+# loading libraries
+library(tidyverse)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
 Firs, we need to install the package `bigquery`. Like other packages, this needs to be done only once for each environment. Run the following code in your console to install this package:
 
 ```
@@ -22,8 +30,13 @@ We can then create the query we would like to run and store it in an object. We 
 
 ```{r}
 sql <- "
-SELECT year, is_male, count(*) FROM `bigquery-public-data.samples.natality`
-GROUP BY year, is_male
+SELECT
+  year,
+  COUNTIF(NOT is_male) female,
+  COUNTIF(is_male) male,
+  COUNT(*) total
+FROM `bigquery-public-data.samples.natality`
+GROUP BY year
 ORDER BY year ASC
 "
 ```
@@ -31,7 +44,7 @@ ORDER BY year ASC
 ## Submit query to BigQuery
 We now will submit a job, the "sql" query we wrote above, to BigQuery. 
 
-**Note:** When you interact with BigQuery for the first time you will have to go through the authentication process. A window in a browser will pop up, select the appropriate account, give permissions and at the last stage copy the given token and paste it to the console. This token will be saved and there will be no need to redo this process in the future.
+**Note:** When you interact with BigQuery for the first time you will have to go through the authentication process. Answer yes (1) to the first question. A window in a browser will pop up, select the appropriate account, give permissions and at the last stage copy the given token and paste it to the console. This token will be saved and there will be no need to redo this process in the future.
 
 Let's run our query:
 
@@ -39,9 +52,30 @@ Let's run our query:
 tb <- bq_project_query(billing, sql)
 ```
 
-Download table data
+Download table data, just the top 10 rows:
 
 ```{r}
-bq_table_download(tb, max_results = 10)
+bq_table_download(tb, max_results = 5)
+```
+
+Let's download the complete data and store is as a data frame:
+
+```{r}
+nat <- bq_table_download(tb)
+nat
+```
+
+```{r}
+ggplot(nat) +
+  geom_line(aes(x = year, y = total, color = "Total")) +
+  geom_line(aes(x = year, y = female, color = "Female")) +
+  geom_line(aes(x = year, y = male, color = "Male")) +
+  scale_color_manual(values = c('Total' = 'black', 
+                                'Female' = '#785f1a', 
+                                'Male' = '#1a5f78')) +
+  labs(color = 'Gender',
+       title = "Number of babies born in the US",
+       subtitle = "1969 - 2008",
+       caption = "Data source: natality from BigQuery public dataset")
 ```
 

@@ -22,12 +22,6 @@ options(repr.plot.width=5, repr.plot.height=3)
 
 As you saw in the earlier notebooks some of R packages provide sample data for educational purposes, for instance `mpg` and `diamonds`. In reality we would want to import our own data for analysis. Base R provides functions for reading and exporting data files but it's not as convenient, and fast as some of the other packages available to us. Here we will use the package **readr**, it is a part of *tidyverse* suite, so, no need to install it since we already have tidyverse. In order to use it we need to load tidyverse (or directly `readr`).
 
-```{r}
-library(openxlsx)  # for writing to Excel files
-library(readxl)  # for reading Excel files
-```
-
-
 ## Reading flat files into data frames
 Under the *data* folder we have a comma-separated value (CSV) file called `Telco-Customer-Churn.csv`. Let's try to load it using `read_csv()` function from readr. Before doing so, let's check our current working directory by:
 
@@ -89,14 +83,16 @@ sampleDf
 
 ```{r}
 calDf <- read_delim("First 2 lines to be skipped!
-Calendar for September 2018
+Calendar for September 2019
 Mon|Tue|Wed|Thu|Fri|MONTH
-3|4|5|6|7|September
-10|11|12|13|14|September
-17|18|19|20|21|September
-24|25|26|27|28|September",
+2|3|4|5|6|September
+9|10|11|12|13|September
+16|17|18|19|20|September
+23|24|25|26|27|September
+30|--|--|--|--|September",
 delim = "|",
-skip = 2)
+skip = 2,
+na = "--")
 
 calDf
 ```
@@ -136,44 +132,6 @@ Identify what is wrong with each of the following inline CSV files. What happens
 
 ---
 
-## Parsing a vector
-Behind the scene readr is using a series of functions called `parse_*()` to import the columns in the data. For instance
-
-```{r}
-parse_logical(c("TRUE", "FALSE", "NA"))
-```
-
-```{r}
-parse_integer(c("1", "2", "3"))
-```
-
-```{r}
-parse_date(c("2010-01-01", "1979-10-14"))
-```
-
-We can specify the `NA` values as they appear differently in various datasets:
-
-```{r}
-parse_integer(c("1", "231", ".", "456"), na = ".")
-```
-
-When parsing fails we get a warning
-
-```{r}
-x <- parse_integer(c("123", "345", "abc", "123.45"))
-```
-
-```{r}
-x
-```
-
-```{r}
-# If we get too many warning we can use `problems()` to list all of them:
-problems(x)
-```
-
----
-
 ## Writing to a file
 Similar to how we read a file from disk we can write one. We can use `write_csv()`, `write_delim()`, and other functions depending on our need. Earlier in this notebook we created `calDf`, a data frame from an inline text which was delimited by "|". Let's write this data frame to file, we can use any of the common delimiters, I pick CSV here:
 
@@ -182,18 +140,23 @@ calDf
 ```
 
 ```{r}
-write_csv(calDf, path = "../tmp/calDf.csv")
+write_csv(calDf, path = "calDf.csv")
 ```
 
 ```{r}
 # Reading the first 3 rows from disk
-calDfNew <- read_csv("../tmp/calDf.csv", n_max = 3)
+calDfNew <- read_csv("calDf.csv", n_max = 3)
 calDfNew
 ```
 
 ---
 
 ## Read Excel files
+
+
+```{r}
+library(readxl)  # for reading Excel files
+```
 We will be using package readxl from tidyverse, but is not a core package so it needs to be loaded explicitly which we did at the top of this notebook. readxl comes with some sample files, we can access to a list of these files by `readxl_example()`
 
 ```{r}
@@ -239,6 +202,11 @@ read_excel(xlsExamplePath, range = "mtcars!B1:D5")
 ---
 
 ## Write to an Excel file
+
+```{r}
+library(openxlsx)  # for writing to Excel files
+```
+
 tidyverse doesn't have a package for writing to an Excel file. We will use `write.xlsx()` from **openxlsx**. This package needs to be installed and loaded. Follow the instructions on the setup notebook for installation.
 
 R base comes with sample data frames (e.g., iris, mtcars), let's write some of them into an Excel file:
