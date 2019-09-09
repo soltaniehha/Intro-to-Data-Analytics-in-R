@@ -1,0 +1,187 @@
+---
+title: "Project Workflow"
+output: html_notebook
+---
+
+### Table of Contents
+* Scripts
+* Projects
+* Common Conventions for R Programming
+
+## Scripts
+We mainly have coded in the console (or notebook) so far. For bigger projects we will need to have a more robust organization. To do this we need to write scripts and save them on files. In the image below you can see that a script called `ggplot-sample.R` is open on the top-left corner and after executing its content the same code will automatically be copied to the console and run from there. We can still use console for testing and running our ad-hoc code, then move it to the script once finalized. 
+
+To open up a new script simply select `R Script` from the "+" sign on the top-left corner.
+
+<img src="../png/rstudio_env_w_script.png" width="600px" align="center">
+
+You can run the script line by line by pressing Cmd/Ctrl + Enter, or run the entire script by Cmd/Ctrl + Shift + Enter.
+
+## Projects
+Now that we are writing our code in scripts let's use an effective way to organize all the project dependencies and create an environment that facilitates collaboration. RStudio comes with a *Project* concept that can handle a lot of our work, especially when in collaboration with others. In the image above on the very top-right you can see that Project is set to nothing; **Project: (None)**. In this section we will learn how to set up  a project environment and how it can be helpful in a longer term.
+
+As a rule of thumb we should always have everything related to a project under one parent directory, everything else goes under child directories. Imagine a hierarchy similar to the one below
+
+<img src="../png/project-hierarchy.png" width="500px" align="center">
+
+Here the parent (project) directory is called `My-First-Project` and it consists of several child directories, which they can have their own child directories. For instance source directory can contain directories such as `sandbox`, `demo`, `main`, etc. It's always a good practice to maintain a `README.md` file in the parent directory and keep it up to date; this file is a good place for giving a high-level overview of what is inside this project, how to get it run, and who to reach for getting more information or report bugs. It is also a good practice to keep a `README.md` file in the immediate directories under parent, for instance one that describes what utility scripts are available under `util` and how to run them.
+
+Ideally, we would like others be able to run our code, that's why we want to keep everything in one place. Using Git or other code sharing tools we let other people access it. There are many occasions that we will reference to data files (for reading data into the memory), or other code files. This can be tricky since the "absolute" location of the code in my computer will be different than yours. This is where R project comes to rescue. If everyone is using the project environment then we can use a project "absolute" path to access other files. All we need to do is to use the relative paths (starting from parent directory) and all others need to follow is to run the code using the project environment. This is an example of information that could go into `README.md`. 
+
+In the hierarchy above, we see the `My-First-Project.Rproj` which is our R project. This was made by clicking on the arrow next to **Project: (None)**, and an existing directory. If it's a brand new project you can create the parent directory from there as well. One can also *clone* from a `git` repository. 
+
+For initiating your R environment from a project there are several ways, here are the two most handy ones:
+
+* Click on the `.Rproj` file and RStudio will open your project
+* From an existing RStudio session click on the arrow next to **Project: (None)** to open your Rproj. RStudio will remember your last projects, so you can also select it from there as well if you see it.
+
+### Practice
+Now that we know how to work in a project setting let's open our project by opening an R session from `R-Bootcamp.Rproj` in the parent directory. There is no need to create a new project since I have already done that, but would be a good practice to create a sample project outside of the R-Bootcamp folder.
+
+We will see many examples of using relative paths in Data Import notebook, here is an example:
+
+```
+library(tidyverse)
+write_csv(mpg, "data/mpg.csv")  # Writing mpg data frame to a csv file
+mpgDF <- read_csv("data/mpg.csv")  # Reading from a csv file
+```
+
+Run this code in a new file, and then check to see if you have created a new csv file in the destination specified. Also, check to see if the new data frame looks as expected. 
+
+## Common Conventions for R Programming (A Google guide)
+
+Source: [Google's R Style Guide](https://google.github.io/styleguide/Rguide.xml)
+
+An adopted summary of this guideline that I will use throughout these notebooks:
+* File names should end in .R and, of course, be meaningful:
+    * GOOD: predict_ad_revenue.R 
+    * BAD: foo.R
+* variableName all lower case letters, except the connection with another word is capitalized
+    * GOOD: avgClicks 
+    * ACCEPTABLE: avg_clicks
+    * BAD: avgclicks
+* FunctionName the same as variable names but starts with a capitalized letter
+    * GOOD: CalculateAvgClicks 
+    * ACCEPTABLE: Calculate_x
+    * BAD: calculate_avg_clicks , calculateAvgClicks 
+    * Make function names verbs. 
+* constants are named like functions but with an initial k.
+    * kConstantName
+* The maximum line length is 80 characters.
+* When indenting your code, use two spaces. Never use tabs or mix tabs and spaces. 
+    * Exception: When a line break occurs inside parentheses, align the wrapped line with the first character inside the parenthesis.
+    
+```
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = cut), 
+           show.legend = FALSE,
+           width = 1
+          )
+```
+
+* Place spaces around all binary operators (=, +, -, <-, etc.). Exception: Spaces around ='s are optional when passing parameters in a function call.
+* Do not place a space before a comma, but always place one after a comma. 
+* Place a space before left parenthesis, except in a function call.
+    * GOOD: `if (debug)`
+    * BAD: `if(debug)`
+* Extra spacing (i.e., more than one space in a row) is okay if it improves alignment of equals signs or arrows (<-).
+
+```
+plot(x    = x.coord,
+     y    = data.mat[, MakeColName(metric, ptiles[1], "roiOpt")],
+     ylim = ylim,
+     xlab = "dates",
+     ylab = metric,
+     main = (paste(metric, " for 3 samples ", sep = "")))
+```
+     
+* Do not place spaces around code in parentheses or square brackets. Exception: place a space after a comma.
+
+```x[1, ]```
+
+* An opening curly brace should never go on its own line; a closing curly brace should always go on its own line. You may omit curly braces when a block consists of a single statement; however, you must consistently either use or not use curly braces for single statement blocks.
+
+```
+if (is.null(ylim)) {
+  ylim <- c(0, 0.06)
+}
+```
+
+* Always begin the body of a block on a new line. 
+
+BAD: 
+
+```
+if (is.null(ylim)) ylim <- c(0, 0.06) 
+if (is.null(ylim)) {ylim <- c(0, 0.06)}
+```
+
+* An else statement should always be surrounded on the same line by curly braces:
+
+```
+if (condition) {
+  one or more lines
+} else {
+  one or more lines
+}
+```
+
+* Use <-, not =, for assignment.
+* Do not terminate your lines with semicolons or use semicolons to put more than one command on the same line.
+* General layout and ordering of an R script:
+    1. Copyright statement comment
+    2. Author comment
+    3. File description comment, including purpose of program, inputs, and outputs
+    4. source() and library() statements
+    5. Function definitions
+    6. Executed statements, if applicable (e.g., print, plot)
+* Unit tests should go in a separate file named originalfilename_test.R.
+* Comment your code. Entire commented lines should begin with # and one space. Short comments can be placed after code preceded by two spaces, #, and then one space.
+
+```
+# Create histogram of frequency of campaigns by pct budget spent.
+hist(df$pct.spent,
+     breaks = "scott")  # method for choosing number of buckets
+```
+
+* Function definitions should first list arguments without default values, followed by those with default values. In both function definitions and function calls, multiple arguments per line are allowed; line breaks are only allowed between assignments:
+
+```
+PredictCTR <- function(query, property, num.days,
+                       show.plot = TRUE)
+```
+
+Functions should contain a comments section immediately below the function definition line. These comments should consist of a one-sentence description of the function; a list of the function's arguments, denoted by "Args:", with a description of each (including the data type); and a description of the return value, denoted by "Returns:". The comments should be descriptive enough that a caller can use the function without reading any of the function's code. Example:
+
+```{r}
+CalculateSampleCovariance <- function(x, y, verbose = TRUE) {
+  # Computes the sample covariance between two vectors.
+  #
+  # Args:
+  #   x: One of two vectors whose sample covariance is to be calculated.
+  #   y: The other vector. x and y must have the same length, greater than one,
+  #      with no missing values.
+  #   verbose: If TRUE, prints sample covariance; if not, not. Default is TRUE.
+  #
+  # Returns:
+  #   The sample covariance between x and y.
+  n <- length(x)
+  
+  # Error handling
+  if (n <= 1 || n != length(y)) {
+    stop("Arguments x and y have different lengths: ",
+         length(x), " and ", length(y), ".")
+  }
+  if (TRUE %in% is.na(x) || TRUE %in% is.na(y)) {
+    stop(" Arguments x and y must not have missing values.")
+  }
+  covariance <- var(x, y)
+  if (verbose)
+    cat("Covariance = ", round(covariance, 4), ".\n", sep = "")
+  return(covariance)
+}
+```
+
+* Errors should be raised using `stop()`.
+* The coding conventions described above should be followed, unless there is good reason to do otherwise. Exceptions include legacy code and modifying third-party code. If you are editing code, take a few minutes to look at the code around you and determine its style. If others use spaces around their if clauses, you should, too. If their comments have little boxes of stars around them, make your comments have little boxes of stars around them, too.
+* Use common sense and BE CONSISTENT.

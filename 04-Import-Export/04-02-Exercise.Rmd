@@ -1,0 +1,13 @@
+---
+title: "Exercise"
+subtitle: "BigQuery Connection - Data Import/Export"
+output: html_notebook
+---
+
+### Exercise 1
+
+* Load the CSV file we saw in the first notebook into a BigQuery table: `data/Telco-Customer-Churn.csv`
+* Read this table in R and store it in a data.frame object.
+* Find a partner and work in teams of two:
+    * Inspect the data visually and create multiple plots.
+    * It's an open ended exercise. Practice the visuazlization techniques you have learned so far and make yourself ready for the quiz.

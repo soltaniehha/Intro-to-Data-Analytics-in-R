@@ -1,0 +1,34 @@
+---
+title: "Exercise"
+subtitle: "Project Workflow"
+output: html_notebook
+---
+
+### Exercise
+
+* Create a new project
+* Create an R script. Call it `Histogram.R`.
+* Write a function that takes a dataframe and a continuous `column` name and plots a customized histogram. Customize `color`, `fill` and theme. And finally plot it with plotly.
+    * Hint: within ggplot pass the column name with `get(column)` to avoid any confusion.
+* Create a Now, you can "source" this file from a new R notebook:
+
+```{r message=FALSE}
+source("Histogram.R")
+```
+
+And reuse that function over and over again:
+```{r message=FALSE}
+library(ggplot2)
+Histogram(mpg, "cty")
+```
+
+```{r message=FALSE}
+Histogram(diamonds, "price")
+```
+
+### Practice
+* From your GitHub create an empty repository
+* Clone this repository from RStudio
+* repeate the previous steps
+* Commit your changes
+* Push them to your repository
