@@ -35,19 +35,6 @@ For initiating your R environment from a project there are several ways, here ar
 * Click on the `.Rproj` file and RStudio will open your project
 * From an existing RStudio session click on the arrow next to **Project: (None)** to open your Rproj. RStudio will remember your last projects, so you can also select it from there as well if you see it.
 
-### Practice
-Now that we know how to work in a project setting let's open our project by opening an R session from `R-Bootcamp.Rproj` in the parent directory. There is no need to create a new project since I have already done that, but would be a good practice to create a sample project outside of the R-Bootcamp folder.
-
-We will see many examples of using relative paths in Data Import notebook, here is an example:
-
-```
-library(tidyverse)
-write_csv(mpg, "data/mpg.csv")  # Writing mpg data frame to a csv file
-mpgDF <- read_csv("data/mpg.csv")  # Reading from a csv file
-```
-
-Run this code in a new file, and then check to see if you have created a new csv file in the destination specified. Also, check to see if the new data frame looks as expected. 
-
 ## Common Conventions for R Programming (A Google guide)
 
 Source: [Google's R Style Guide](https://google.github.io/styleguide/Rguide.xml)
@@ -71,7 +58,7 @@ An adopted summary of this guideline that I will use throughout these notebooks:
 * When indenting your code, use two spaces. Never use tabs or mix tabs and spaces. 
     * Exception: When a line break occurs inside parentheses, align the wrapped line with the first character inside the parenthesis.
     
-```
+```{r eval=FALSE}
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut, fill = cut), 
            show.legend = FALSE,
@@ -86,7 +73,7 @@ ggplot(data = diamonds) +
     * BAD: `if(debug)`
 * Extra spacing (i.e., more than one space in a row) is okay if it improves alignment of equals signs or arrows (<-).
 
-```
+```{r eval=FALSE}
 plot(x    = x.coord,
      y    = data.mat[, MakeColName(metric, ptiles[1], "roiOpt")],
      ylim = ylim,
@@ -101,7 +88,7 @@ plot(x    = x.coord,
 
 * An opening curly brace should never go on its own line; a closing curly brace should always go on its own line. You may omit curly braces when a block consists of a single statement; however, you must consistently either use or not use curly braces for single statement blocks.
 
-```
+```{r eval=FALSE}
 if (is.null(ylim)) {
   ylim <- c(0, 0.06)
 }
@@ -111,14 +98,14 @@ if (is.null(ylim)) {
 
 BAD: 
 
-```
+```{r eval=FALSE}
 if (is.null(ylim)) ylim <- c(0, 0.06) 
 if (is.null(ylim)) {ylim <- c(0, 0.06)}
 ```
 
 * An else statement should always be surrounded on the same line by curly braces:
 
-```
+```{r eval=FALSE}
 if (condition) {
   one or more lines
 } else {
@@ -138,7 +125,7 @@ if (condition) {
 * Unit tests should go in a separate file named originalfilename_test.R.
 * Comment your code. Entire commented lines should begin with # and one space. Short comments can be placed after code preceded by two spaces, #, and then one space.
 
-```
+```{r eval=FALSE}
 # Create histogram of frequency of campaigns by pct budget spent.
 hist(df$pct.spent,
      breaks = "scott")  # method for choosing number of buckets
@@ -146,14 +133,14 @@ hist(df$pct.spent,
 
 * Function definitions should first list arguments without default values, followed by those with default values. In both function definitions and function calls, multiple arguments per line are allowed; line breaks are only allowed between assignments:
 
-```
+```{r eval=FALSE}
 PredictCTR <- function(query, property, num.days,
                        show.plot = TRUE)
 ```
 
 Functions should contain a comments section immediately below the function definition line. These comments should consist of a one-sentence description of the function; a list of the function's arguments, denoted by "Args:", with a description of each (including the data type); and a description of the return value, denoted by "Returns:". The comments should be descriptive enough that a caller can use the function without reading any of the function's code. Example:
 
-```{r}
+```{r eval=FALSE}
 CalculateSampleCovariance <- function(x, y, verbose = TRUE) {
   # Computes the sample covariance between two vectors.
   #
