@@ -54,15 +54,19 @@ class(telcoChurnDf)
 
 If we look at the help page for `read_csv()` we see what defaults were used for importing the file:
 
-> read_csv(file, col_names = TRUE, col_types = NULL, locale = default_locale(), na = c("", "NA"), quoted_na = TRUE, quote = "\"", comment = "", trim_ws = TRUE, skip = 0, n_max = Inf, guess_max = min(1000, n_max), progress = show_progress())
+```{r eval=FALSE}
+read_csv(file, col_names = TRUE, col_types = NULL, locale = default_locale(), na = c("", "NA"), quoted_na = TRUE, quote = "\"", comment = "", trim_ws = TRUE, skip = 0, n_max = Inf, guess_max = min(1000, n_max), progress = show_progress())
+```
   
 To get details for each of these parameters scroll down to see descriptions and examples.
 
 We started with `read_csv()` since it's by far the most popular *flat file*. But not all the rectangular files have their fields separated by a comma (","). Most common *delimiter-separated values* (DSV) files are: comma (",", also CSV), tab ("    ", also TSV), colon (";"), and pipe ("|"). `read_delim()` is a generic function that can handle different delimiters, note that the second argument `delim` must be provided:
 
 
-> read_delim(file, delim, quote = "\"", escape_backslash = FALSE, escape_double = TRUE, col_names = TRUE, col_types = NULL, locale = default_locale(), na = c("", "NA"), quoted_na = TRUE, comment = "", trim_ws = FALSE, skip = 0, n_max = Inf,
+```{r eval=FALSE}
+read_delim(file, delim, quote = "\"", escape_backslash = FALSE, escape_double = TRUE, col_names = TRUE, col_types = NULL, locale = default_locale(), na = c("", "NA"), quoted_na = TRUE, comment = "", trim_ws = FALSE, skip = 0, n_max = Inf,
   guess_max = min(1000, n_max), progress = show_progress())
+```
 
 There are several different functions to support other formats such as fixed width files, and log files. To learn more visit [readr.tidyverse.org](https://readr.tidyverse.org/)
 

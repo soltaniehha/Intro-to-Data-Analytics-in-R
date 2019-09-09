@@ -14,7 +14,7 @@ options(repr.plot.width=5, repr.plot.height=3)
 
 Firs, we need to install the package `bigquery`. Like other packages, this needs to be done only once for each environment. Run the following code in your console to install this package:
 
-```
+```{r eval=FALSE}
 install.packages("bigrquery")
 ```
 
