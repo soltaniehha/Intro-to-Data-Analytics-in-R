@@ -1,0 +1,202 @@
+---
+title: "CSV & Excel Read/Write"
+subtitle: "Data Import/Export"
+output: html_notebook
+---
+
+```{r include=FALSE}
+# loading libraries
+library(tidyverse)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+
+### Table of Contents
+* Reading flat files into data frames
+* Reading from inline
+* Parsing a vector
+* Writing to a file
+* Read Excel files
+* Write to an Excel file
+
+As you saw in the earlier notebooks some of R packages provide sample data for educational purposes, for instance `mpg` and `diamonds`. In reality we would want to import our own data for analysis. Base R provides functions for reading and exporting data files but it's not as convenient, and fast as some of the other packages available to us. Here we will use the package **readr**, it is a part of *tidyverse* suite, so, no need to install it since we already have tidyverse. In order to use it we need to load tidyverse (or directly `readr`).
+
+## Reading flat files into data frames
+Under the *data* folder we have a comma-separated value (CSV) file called `Telco-Customer-Churn.csv`. Let's try to load it using `read_csv()` function from readr. Before doing so, let's check our current working directory by:
+
+```{r}
+getwd()
+```
+
+Yours will be different in two ways. 1) the path leading to `Intro-to-Data-Analytics-in-R` folder is different. 2) the folder containing your notebook is in the `sandbox` folder. The following code cell will fail, unless you modify yours to reflect the correct relative path:
+
+```
+telcoChurnDf <- read_csv("../../data/Telco-Customer-Churn.csv")
+```
+
+```{r}
+telcoChurnDf <- read_csv("../data/Telco-Customer-Churn.csv")
+```
+
+```{r}
+telcoChurnDf
+```
+
+This behavior is different when you use an R script within a project. There, you can provide an absolute path from your project's root. In that scenario you will provide `"data/Telco-Customer-Churn.csv"` and this will work from anywhere in your project. No more need to modify the path when moving the code or notebook around.
+
+As it appears from the look of printed data frame we immediately realize that `read_csv()` has automatically loaded our CSV file into a tibble data frame and associated it with the name we provided. We can check its class:
+
+```{r}
+class(telcoChurnDf)
+```
+
+If we look at the help page for `read_csv()` we see what defaults were used for importing the file:
+
+```{r eval=FALSE}
+read_csv(file, col_names = TRUE, col_types = NULL, locale = default_locale(), na = c("", "NA"), quoted_na = TRUE, quote = "\"", comment = "", trim_ws = TRUE, skip = 0, n_max = Inf, guess_max = min(1000, n_max), progress = show_progress())
+```
+  
+To get details for each of these parameters scroll down to see descriptions and examples.
+
+We started with `read_csv()` since it's by far the most popular *flat file*. But not all the rectangular files have their fields separated by a comma (","). Most common *delimiter-separated values* (DSV) files are: comma (",", also CSV), tab ("    ", also TSV), colon (";"), and pipe ("|"). `read_delim()` is a generic function that can handle different delimiters, note that the second argument `delim` must be provided:
+
+
+```{r eval=FALSE}
+read_delim(file, delim, quote = "\"", escape_backslash = FALSE, escape_double = TRUE, col_names = TRUE, col_types = NULL, locale = default_locale(), na = c("", "NA"), quoted_na = TRUE, comment = "", trim_ws = FALSE, skip = 0, n_max = Inf,
+  guess_max = min(1000, n_max), progress = show_progress())
+```
+
+There are several different functions to support other formats such as fixed width files, and log files. To learn more visit [readr.tidyverse.org](https://readr.tidyverse.org/)
+
+## Reading from inline 
+Any of these functions will work with reading inline instead of a file. This is primarily useful for experimentation:
+
+```{r}
+read_csv("a,b,c
+1,2,3
+4,5,6")
+```
+
+```{r}
+sampleDf <- read_csv("a,b,c
+1,2,3
+4,5,6")
+sampleDf
+```
+
+```{r}
+calDf <- read_delim("First 2 lines to be skipped!
+Calendar for September 2019
+Mon|Tue|Wed|Thu|Fri|MONTH
+2|3|4|5|6|September
+9|10|11|12|13|September
+16|17|18|19|20|September
+23|24|25|26|27|September
+30|--|--|--|--|September",
+delim = "|",
+skip = 2,
+na = "--")
+
+calDf
+```
+
+The data might not come with column name, we can tell the function that don't use the first row as column name by `col_names = FALSE`, which is the default behavior:
+
+```{r}
+read_csv("1,2,3\n4,5,6", col_names = FALSE)
+```
+
+`read_csv()` is providing names for the columns, we can also specify them manually:
+
+```{r}
+read_csv("1,2,3\n4,5,6", col_names = c("x", "y", "z"))
+```
+
+---
+
+## Writing to a file
+Similar to how we read a file from disk we can write one. We can use `write_csv()`, `write_delim()`, and other functions depending on our need. Earlier in this notebook we created `calDf`, a data frame from an inline text which was delimited by "|". Let's write this data frame to file, we can use any of the common delimiters, I pick CSV here:
+
+```{r}
+calDf
+```
+
+```{r}
+write_csv(calDf, path = "calDf.csv")
+```
+
+```{r}
+# Reading the first 3 rows from disk
+calDfNew <- read_csv("calDf.csv", n_max = 3)
+calDfNew
+```
+
+---
+
+## Read Excel files
+
+We will be using package readxl from tidyverse, but is not a core package so it needs to be loaded explicitly:
+
+```{r}
+library(readxl)  # for reading Excel files
+```
+
+We can check out the sheet names with `excel_sheets()`:
+
+```{r}
+myExcelPath <- "../data/datasets.xlsx"
+excel_sheets(myExcelPath)
+```
+
+and read any of these sheets into a data frame by `read_excel()`:
+
+```{r}
+mtcarsDf <- read_excel(myExcelPath, sheet = 'mtcars')
+mtcarsDf
+```
+
+if `sheet` parameter is not specified it'll go to the default which is the first sheet.
+
+We can read only a subset of the cells by an Excel-specified notation:
+
+```{r}
+read_excel(myExcelPath, range = "C1:E4")
+```
+
+```{r}
+read_excel(myExcelPath, range = cell_cols("B:D"))
+```
+
+```{r}
+read_excel(myExcelPath, range = "mtcars!B1:D5")
+```
+
+---
+
+## Write to an Excel file
+
+tidyverse doesn't have a package for writing to Excel files. We will use `write.xlsx()` from **openxlsx**. This package needs to be installed and loaded. Follow the instructions on the setup notebook for installation:
+
+```{r}
+library(openxlsx)  # for writing to Excel files
+```
+
+Let's write some of the data frames we have worked with into an Excel file:
+
+```{r}
+l <- list(mpg=mpg, diamonds=diamonds, iris=iris)
+openxlsx::write.xlsx(l, file = "myNewDatasets.xlsx")
+```
+
+Reminder: `openxlsx::` is optional, just a good practice for showing that unlike all of the other packages used in this notebook `write.xlsx()` is not from tidyverse.
+
+---
+
+### Other types of data
+* **haven** reads SPSS, Stata, and SAS files
+* **DBI**, along with a database specific backend (e.g. RMySQL, RSQLite, RPostgreSQL etc) allows you to run SQL queries against a database and return a data frame
+* For hierarchical data: use **jsonlite** for json, and **xml2** for XML
+* **bigrquery** package allows read/write from/to BigQuery tables.
+

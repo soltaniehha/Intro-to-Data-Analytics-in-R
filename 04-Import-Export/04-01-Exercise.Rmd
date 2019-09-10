@@ -1,0 +1,33 @@
+---
+title: "Exercise"
+subtitle: "CSV & Excel Read/Write - Data Import/Export"
+output: html_notebook
+---
+
+### Exercise 1
+Sometimes strings in a CSV file contain commas. To prevent them from causing problems they need to be surrounded by a quoting character, like `"` or `'`. By convention, `read_csv()` assumes that the quoting character will be `"`, and if you want to change it, you'll need to use `read_delim()` instead. What arguments do you need to specify to read the following text into a data frame?
+
+> "x,y  
+1,'a,b'"
+
+---
+
+### Exercise 2
+Identify what is wrong with each of the following inline CSV files. What happens when you run the code? Fix the ones that you can.
+
+> `read_csv("a,b\n1,2,3\n4,5,6")`
+
+> `read_csv("a,b,c\n1,2\n1,2,3,4")`
+
+> `read_csv("a,b\n1,2\na,b")`
+
+> `read_csv("a;b\n1;3")`
+
+---
+
+### Exercise 3
+Take the Excel file that we just created: `myNewDatasets.xlsx`. Pick one or two sheets from it and read them into your R memory. Try to read different cuts using Excel notation discussed in the notebook.
+
+```{r}
+# Your code goes here
+```

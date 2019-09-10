@@ -1,0 +1,217 @@
+---
+title: "Theme"
+subtitle: "Data Visualization - Part 7"
+output: html_notebook
+---
+
+```{r include=FALSE}
+# loading libraries
+library(tidyverse)
+library(ggthemes)
+library(plotly)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+<center> ![](../png/layers-of-ggplot.png){width=400} </center>
+
+### ggthemes
+First let's look at a simple scatterplot made by `geom_point()` and with no themes:
+
+```{r}
+p <- ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point() +
+  ggtitle("Cars")
+p
+```
+```{r}
+p2 <- ggplot(mtcars, aes(x = wt, y = mpg, color = factor(gear))) +
+  geom_point() +
+  labs(title = "Cars", color = "Gear")
+p2
+```
+
+
+#### Tufte theme and geoms
+Minimal theme and geoms based on plots in The Visual Display of Quantitative Information.
+
+```{r}
+p + geom_rangeframe() +
+  theme_tufte()
+```
+
+#### Economist theme
+A theme that approximates the style of plots in The Economist magazine.
+
+```{r}
+p + theme_economist() + scale_colour_economist() 
+```
+
+#### Excel 2003 theme
+For that classic ugly look and feel
+
+```{r}
+p2 + theme_excel() + scale_colour_excel()
+```
+
+#### Wall Street Journal
+Theme and some color palettes based on plots in the The Wall Street Journal.
+
+```{r}
+p2 + theme_wsj() + scale_colour_wsj("colors6", "")
+```
+
+### Create your own theme
+
+```{r}
+blank_theme <- theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_text(size=14, face="bold")
+    )
+```
+
+```{r}
+p + blank_theme
+```
+
+
+## Template for layered grammar of graphics
+
+
+> ```ggplot(data = <DATA>) + 
+  <GEOM_FUNCTION>(
+     mapping = aes(<MAPPINGS>),
+     stat = <STAT>, 
+     position = <POSITION>
+  ) +
+  <COORDINATE_FUNCTION> +
+  <FACET_FUNCTION>
+```
+
+In practice, you rarely need to supply all seven parameters to make a graph because ggplot2 will provide useful defaults for everything except the data, the mappings, and the geom function.
+
+----
+
+## More Examples
+
+**Bar Chart** from [Top 50 ggplot2 Visualizations](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html).
+
+We saw how to create a bar chart with `geom_bar()`. By default `geom_bar()` will use `stat = "count"`, so we don't need to provide a `y`, it's being calculated as the count of points in each bin. In order to create a bar chart with a given `y` value we need to set `stat=identity` and provide both `x` and `y` inside `aes()` `x` is either character or factor and `y` is numeric.
+
+```{r}
+# create a frequency table
+freqtable <- table(mpg$manufacturer)
+df <- as.data.frame.table(freqtable)
+head(df)
+```
+
+```{r}
+ggplot(df, aes(Var1, Freq)) + 
+  geom_bar(stat="identity", width = 0.5, fill="tomato2") + 
+  labs(title="Bar Chart", 
+       subtitle="Manufacturer of vehicles", 
+       caption="Source: Frequency of Manufacturers from 'mpg' dataset",
+       x = "Manufacturer") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle=65, vjust=0.6))  # to give x labels an angle for readability 
+```
+
+**Email Campaign Funnel** from [Top 50 ggplot2 Visualizations](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html):
+
+```{r}
+options(scipen = 999)  # turns off scientific notations like 1e+40
+options(repr.plot.width=7, repr.plot.height=5)  # Modifying the chart size
+
+# Read data
+options(readr.num_columns = 0)  # turns off messages printed by read_csv
+email_campaign_funnel <- read_csv("https://raw.githubusercontent.com/selva86/datasets/master/email_campaign_funnel.csv")
+
+# X Axis Breaks and Labels 
+brks <- seq(-15000000, 15000000, 5000000)
+lbls = paste0(as.character(c(seq(15, 0, -5), seq(5, 15, 5))), "m")
+
+# Plot
+ggplot(email_campaign_funnel, aes(x = Stage, y = Users, fill = Gender)) +   # Fill column
+                              geom_bar(stat = "identity", width = .6) +   # draw the bars
+                              scale_y_continuous(breaks = brks,   # Breaks
+                                                 labels = lbls) + # Labels
+                              coord_flip() +  # Flip axes
+                              labs(title = "Email Campaign Funnel") +
+                              theme_tufte() +  # Tufte theme from ggfortify
+                              theme(plot.title = element_text(hjust = .5), 
+                                    axis.ticks = element_blank())  # Centre plot title
+```
+
+### Line chart
+```{r}
+dtemp <- data.frame(months = factor(rep(substr(month.name,1,3), 4), levels = substr(month.name,1,3)),
+                    city = rep(c("Tokyo", "New York", "Berlin", "London"), each = 12),
+                    temp = c(7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6,
+                             -0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5,
+                             -0.9, 0.6, 3.5, 8.4, 13.5, 17.0, 18.6, 17.9, 14.3, 9.0, 3.9, 1.0,
+                             3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8))
+
+temp <- ggplot(dtemp, aes(x = months, y = temp, group = city, color = city)) +
+  geom_line() + 
+  geom_point(size = 1.1) + 
+  ggtitle("Monthly Average Temperature") +
+  theme_hc(style = "darkunica") +
+  scale_fill_hc("darkunica")
+temp
+```
+
+# Interactive plotting with Plotly
+We can use package **plotly** on top of a ggplot plot to create interactive charts. Plotly is a powerful tool for creating interactive dashboards and plots and there are different ways to use it. Here we will only show how to make ggplots into a plotly by using `ggplotly()` function. For more information about other ways to leverage this package go to [ploy.ly](https://plot.ly/).
+
+## Scatterplot
+Let's use the most recent plot we created with WSJ theme as an example:
+
+```{r warning=FALSE}
+ggplotly(p2 + theme_wsj() + scale_colour_wsj("colors6", ""))  # Same plot with ggplotly()
+```
+
+## Time Series
+Using `geom_line()`, a time series (or line chart) can be drawn. Data: `economics` from ggplot2.
+
+```{r}
+head(economics)
+```
+
+
+```{r}
+ts_plot <- ggplot(economics, aes(x=date)) + 
+geom_line(aes(y=psavert)) + 
+  labs(title="US economic time series", 
+       subtitle = "Personal Savings Rate",
+       caption="Source: Economics", 
+       y="Savings Rate %") +
+  theme_classic()
+
+ggplotly(ts_plot)  # Same plot with ggplotly()
+```
+
+## Bar chart
+
+```{r warning=FALSE}
+bar_plot <- ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "dodge") +
+  scale_fill_manual(values = c("#41f4f4", "#41d9f4", "#41bbf4", "#418ef4", "#415ef4", "#6a41f4", "#9741f4", "#f441f1"))
+
+ggplotly(bar_plot)  # Same plot with ggplotly()
+```
+
+----
+
+# Additional Recourses
+* Examples of elaborate charts: [Top 50 ggplot2 Visualizations](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html)
+* To go beyond ggplot2 functionalities check out these extensions: [ggplot2 extensions](http://www.ggplot2-exts.org/gallery/)
+* *ggplot2-cheatsheet.pdf* in the cheatsheets directory
+* Hex color
+    * Simply google "hex color picker" and use Google's tool
+* Themes
+    * [ggthemes](https://github.com/jrnold/ggthemes) - Examples [here](https://mran.microsoft.com/snapshot/2016-12-03/web/packages/ggthemes/vignettes/ggthemes.html)
+    * [ggtech](https://github.com/ricardo-bion/ggtech)

@@ -1,0 +1,74 @@
+---
+title: "Coordinates"
+subtitle: "Data Visualization - Part 6"
+output: html_notebook
+---
+
+```{r include=FALSE}
+# loading libraries
+library(tidyverse)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+<center> ![](../png/layers-of-ggplot.png){width=400} </center>
+
+The default coordinate system is the Cartesian coordinate system where the x and y positions act independently to determine the location of each point. There are a number of other coordinate systems that are occasionally helpful.
+
+Flip cartesian coordinates so that horizontal becomes vertical, and vertical, horizontal:
+
+`coord_flip()`
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot()
+```
+
+```{r}
+ggplot(data = mpg, aes(x = class, y = hwy)) + 
+  geom_boxplot() +
+  coord_flip()
+```
+
+Or similarly with violin plots:
+
+```{r}
+violin <- ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_violin(aes(fill=class, alpha = 1/2), show.legend = FALSE) +
+  geom_jitter(width = 0.1, alpha = 1/3) 
+
+violin
+```
+
+```{r}
+violin + coord_flip()
+```
+
+
+* `coord_polar()`
+
+```{r}
+bar <- ggplot(diamonds) +
+  geom_bar(aes(x = cut, fill = cut), show.legend = FALSE, width = 1) +
+  labs(x= NULL, 
+       title = "Distribution of diamonds based on cut",
+       subtitle = "Data: ggplot2::diamonds") +
+  theme(aspect.ratio = 1)
+
+bar + coord_flip()
+```
+
+```{r}
+bar + coord_polar()
+```
+
+## Exercise
+What does the plot below tell you about the relationship between city and highway mpg? Why is `coord_fixed()` important? What does `geom_abline()` do?
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline() +
+  coord_fixed()
+```

@@ -48,7 +48,7 @@ The primary textbook, **R for Data Science**, can be used for deeper explanation
 
 <center> ![](../png/r_for_data_science.png){width=300} </center>
 
-...and yes that's a [kākāpō](https://www.youtube.com/watch?v=9T1vfsHYiKY). 
+...and yes that's a [kākāpō](https://en.wikipedia.org/wiki/Kakapo).
 
 Additional materials:
 
