@@ -1,0 +1,68 @@
+---
+title: "Individual Assignment 1"
+subtitle: "BA780 - Fall 2019"
+output: html_notebook
+---
+
+**Name:** <YOUR NAME>
+
+Total points: 20
+
+(3 points) Please add your name on the top. Submit your homework in the form of an HTML extract of an R Notebook. Include the questions in your notebook for clarity.
+
+### Problem 1 
+(3 points)
+
+1. In the `mpg` dataset from *ggplot2* package, how would you describe the relationship between `cty` and `hwy`? Plot one graph with appropriate layers to explain this relationship.
+
+2. Most likely you have done some overplotting in the previous question (which is OK). Can you suggest a method that overcomes this overplotting and gives a better insight about the relationship in the data?
+
+**Answer:**
+
+----
+
+### Problem 2 
+
+(5 points)
+
+1. Using the `mpg` dataset from *ggplot2* package, explore the 3-way relationship between fuel economy (`cty`), engine size (`displ`) and number of cylinders (`cyl`). By plotting `displ` vs. `cty` we can confirm that the bigger the engine the lower the gas mileage; how does bringing in the number of cylinders change your assessement of the relationship between engine size and fuel economy? (3 points)
+
+Hint: Fitting a linear line will help you make a better judgement.
+
+2. How can you explain the somewhat surprising outcome for 8 cylinder cars? Hint: use your visualization techniques to describe it. One possible explanation could be revealed by using `class` in conjunction with the other 3 aformentioned variables. (2 points)
+
+**Answer:**
+
+----
+
+### Problem 3 
+(3 points)
+
+Explore the distribution of the `carat` variable in the `diamonds` dataset from *ggplot2*. What binwidth reveals the most interesting patterns? Can you make an educated guess what this pattern reveals?
+
+Hint: You may try different `bindwidth` to find a good demonstration of the pattern.
+
+**Answer:**
+
+----
+
+### Problem 4
+(6 points)
+
+Create a ggplot function that contains the built-in `diamonds` dataset and an aesthetics layer. Map `carat` on the x axis and `price` on the y axis. Using + , add a `geom_point` with an `alpha` of `0.02`. Assign this initial plot to an object: `p`
+
+ Then add (+) `geom_smooth` layer to the `p` object. Map `clarity` to the color argument in the `geom_smooth` function (add `se=FALSE` to `geom_smooth` to turn off error shading). Add `theme_minimal` layer.
+
+Note: the plot will take a few seconds to generate. Your plot should look similar to the one given below:
+
+```{r echo=FALSE}
+p <- ggplot(diamonds, aes(x = carat, y = price)) + geom_point(alpha = 0.02)
+p <- p + geom_smooth(se = FALSE, aes(color = clarity)) 
+p + theme_minimal()
+```
+
+1. Reproduce this plot.
+
+2. What is your observation?
+
+**Answer:**
