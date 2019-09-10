@@ -40,6 +40,7 @@ For initiating your R environment from a project there are several ways, here ar
 Source: [Google's R Style Guide](https://google.github.io/styleguide/Rguide.xml)
 
 An adopted summary of this guideline that I will use throughout these notebooks:
+
 * File names should end in .R and, of course, be meaningful:
     * GOOD: predict_ad_revenue.R 
     * BAD: foo.R
