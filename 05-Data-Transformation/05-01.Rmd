@@ -1,0 +1,257 @@
+---
+title: "Data Transformation"
+subtitle: "Part 1"
+output: html_notebook
+---
+
+### Table of Contents
+* Introduction
+* Pipes with magrittr
+* nycflights13
+* dplyr basics
+* Filter rows with filter()
+* Missing values
+* Arrange rows with arrange()
+* Select columns with select()
+
+```{r echo=FALSE}
+# loading libraries
+library(tidyverse)
+library(lubridate)
+library(nycflights13)
+library(plotly)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+## Introduction
+Visualization is an important tool for insight generation, but it is rare that you get the data in exactly the right form you need. Often you'll need to create some new variables or summaries, or maybe you just want to rename the variables or reorder the observations in order to make the data a little easier to work with. You'll learn how to do all that in this notebook and next one, which will teach you how to transform your data using the **dplyr** package and a new dataset on flights departing New York City in 2013 (from nycflights13 package).
+
+---
+
+
+
+## Pipes with magrittr  ![](../png/magrittr.png){width=100}
+The pipe, `%>%`, comes from the **magrittr** package. Packages in the tidyverse load `%>%` for you automatically, so you don't usually load magrittr explicitly.
+
+Pipe was designed to decrease development time and to improve readability of the code. magrittr provides a “pipe”-like operator, `%>%`, with which you may pipe a value forward into an expression or function call; something along the lines of `x %>% f`, rather than `f(x)`. 
+
+Example:
+
+```{r}
+mpg %>% nrow
+```
+
+Equivalent to `nrow(mpg)`. You might ask why bother to learn a new syntax when the conventional `f(x)` works just fine; the answer is that pipes become very handy as the number of operations grow. For instance we will see later in this notebook that we can pipe multiple steps together, rather than saving them in temporary variables and reusing them. E.g., `x %>% f %>% g %>% h` rather than `h(g(f(x)))`.
+
+When using a pipe we can pass the primary object to the function by a pipe and define the secondary function parameters inside as we would normally do. The following code is equivalent to `matrix(rnorm(10), ncol = 2)`:
+
+```{r}
+10 %>%
+  rnorm %>%
+  matrix(ncol = 2)
+```
+
+Let's make more random numbers and pipe a plot function at the end:
+
+```{r}
+100 %>%
+  rnorm %>%
+  matrix(ncol = 2) %>%
+  plot
+```
+
+
+---
+
+## nycflights13
+To explore the basic data manipulation verbs of dplyr, we'll use `nycflights13::flights`. This data frame contains all 336,776 flights that departed from New York City in 2013. The data comes from the US Bureau of Transportation Statistics, and is documented in `?flights`.
+
+```{r}
+flights
+```
+
+---
+
+## dplyr basics
+**dplyr** is a grammar of data transformation, providing a consistent set of verbs that help you solve the most common data transformation challenges:
+
+* `filter()` picks cases based on their values.
+* `arrange()` changes the ordering of the rows.
+* `select()` picks variables based on their names.
+* `mutate()` adds new variables that are functions of existing variables
+* `summarize()` reduces multiple values down to a single summary.
+
+These six functions provide the verbs for a language of data transformation These all combine naturally with `group_by()` which allows you to perform any operation "by group".
+
+All verbs work similarly:
+
+1. The first argument is a data frame.
+2. The subsequent arguments describe what to do with the data frame, using the variable names (without quotes).
+3. The result is a new data frame.
+
+## Filter rows with `filter()`
+`filter()` allows you to subset observations based on their values. The first argument is the name of the data frame. The second and subsequent arguments are the expressions that filter the data frame. For example, we can select all flights on January 1st with:
+
+```{r}
+filter(flights, month == 1, day == 1)
+```
+
+dplyr functions never modify their inputs, so if you want to save the result, you'll need to use the assignment operator, `<-`:
+
+```{r}
+jan1 <- filter(flights, month == 1, day == 1)
+```
+
+### Comparisons
+R provides the standard suite: `>`, `>=`, `<`, `<=`, `!=` (not equal), and `==` (equal) for performing comparisons. All of these can be used inside `filter()`. For instance the following code will filter out the flights without any departure delay:
+
+```{r}
+flights %>% 
+  filter(dep_delay <= 0)
+```
+
+### Logical operators
+We can provide multiple comparisons to `filter()`. For this you'll need to use Boolean operators: `&` is "and", `|` is "or", and `!` is "not". Figure below shows a complete set of Boolean operations.
+
+<center> ![](../png/logical.png){width=400} </center>
+
+The following code finds all flights that departed in November **or** December:
+
+```{r}
+flights %>%
+  filter(month == 11 | month == 12)
+```
+
+Alternatively we could use the following syntax:
+
+> `filter(flights, month %in% c(11, 12))`
+
+Whenever you start using complicated, multi-part expressions in `filter()`, consider making them explicit variables instead. That makes it much easier to check your work. You'll learn how to create new variables shortly.
+
+### Missing values
+One important feature of R that can make comparison tricky is missing value, or `NA` ("Not Available"). `NA` represents an unknown value so missing values are "contagious": almost any operation involving an unknown value will also be unknown:
+
+```{r}
+NA > 5
+```
+
+```{r}
+10 == NA
+```
+
+```{r}
+NA + 10
+```
+
+```{r}
+NA / 2
+```
+
+```{r}
+NA == NA
+```
+
+It's easiest to understand why this is true with a bit more context:
+
+```{r}
+# Let x be Mary's age. We don't know how old she is.
+x <- NA
+
+# Let y be John's age. We don't know how old he is.
+y <- NA
+
+# Are John and Mary the same age?
+x == y
+```
+
+We don't know!
+
+Use `is.na()` to determine if a value is missing
+
+```{r}
+is.na(x)
+```
+
+`filter()` only includes rows where the condition is `TRUE`; it excludes both `FALSE` and `NA` values. If you want to preserve missing values, ask for them explicitly:
+
+```{r}
+(df <- tibble(x = c(1, NA, 3)))
+```
+
+```{r}
+filter(df, x > 1)
+```
+
+```{r}
+filter(df, is.na(x) | x > 1)
+```
+
+---
+
+## Arrange rows with `arrange()`
+`arrange()` works similarly to `filter()` except that instead of selecting rows, it does what it claims it does: changes their order. It takes a data frame and a set of column names (or more complicated expressions) to order by. If you provide more than one column name, each additional column will be used to break ties in the values of preceding columns:
+
+```{r}
+arrange(flights, year, month, day)
+```
+
+Use `desc()` to re-order by a column in descending order:
+
+```{r}
+arrange(flights, desc(dep_delay))
+```
+
+Missing values are always sorted at the end:
+
+```{r}
+df <- tibble(x = c(5, 6, 2, NA))
+arrange(df, x)
+```
+
+```{r}
+arrange(df, desc(x))
+```
+
+---
+
+## Select columns with `select()`
+It's not uncommon to get datasets with hundreds or even thousands of variables. In this case, the first challenge is often narrowing in on the variables you're actually interested in. `select()` allows you to do that:
+
+```{r}
+# Select columns by name
+select(flights, year, month, day)
+```
+
+```{r}
+# Select columns between year and day (inclusive)
+select(flights, year:day)
+```
+
+```{r}
+# Select all columns except those from year to day (inclusive)
+select(flights, -(year:day))
+```
+
+There are a number of helper functions you can use within `select()`:
+
+* `starts_with("abc")`: matches names that begin with "abc".
+* `ends_with("xyz")`: matches names that end with "xyz".
+* `contains("ijk")`: matches names that contain "ijk".
+* `num_range("x", 1:3)`: matches `x1`, `x2` and `x3`.
+* `everything()`: useful for bringing a few columns to the beginning of the dataframe and still want to keep everything else at the end.
+
+See `?select` for more details.
+
+`select()` can be used to rename variables (e.g., `select(flights, y = year)`), but it's rarely useful because it drops all of the variables not explicitly mentioned. Instead, use `rename()`, which is a variant of `select()` that keeps all the variables that aren't explicitly mentioned:
+
+```{r}
+rename(flights, y = year, tail_num = tailnum)
+```
+
+#### `everything()` example
+
+```{r}
+select(flights, time_hour, aritime = air_time, everything())
+```
