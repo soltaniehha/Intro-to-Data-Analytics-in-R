@@ -1,0 +1,192 @@
+---
+title: "Solution"
+subtitle: "Data Transformation - Part 1"
+output: html_notebook
+---
+
+```{r}
+# loading libraries
+library(tidyverse)
+library(nycflights13)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+### Exercise 1
+Find all flights that
+
+1. Had an arrival delay of two or more hours
+2. Flew to Houston (IAH or HOU)
+3. Were operated by United, American, or Delta (hint: use `airline` dataset to get the two-character carrier codes)
+4. Departed in summer (July, August, and September)
+5. Arrived more than two hours late, but didn't leave late
+6. Departed by at least an hour delay, but made up over 30 minutes in flight
+7. Departed between midnight and 6am (inclusive)
+
+**Answer:**
+
+1. Had an arrival delay of two or more hours
+```{r}
+filter(flights, arr_delay >= 120)
+```
+2. Flew to Houston (IAH or HOU)
+```{r}
+filter(flights, dest == "IAH" | dest == "HOU")
+# or filter(flights, dest %in% c("IAH", "HOU"))
+```
+
+3. Were operated by United, American, or Delta (hint: use `airline` dataset to get the two-character carrier codes)
+```{r}
+airlines
+```
+
+```{r}
+filter(flights, carrier %in% c("AA", "DL", "UA"))
+```
+
+
+4. Departed in summer (July, August, and September)
+```{r}
+filter(flights, month %in%  c(7, 8, 9))
+```
+
+5. Arrived more than two hours late, but didn't leave late
+```{r}
+filter(flights, dep_delay <= 0, arr_delay > 120)
+```
+
+6. Departed by at least an hour delay, but made up over 30 minutes in flight
+```{r}
+filter(flights, dep_delay >= 60, dep_delay - arr_delay > 30)
+```
+
+7. Departed between midnight and 6am (inclusive)
+```{r}
+filter(flights, dep_time <= 600 | dep_time == 2400)
+```
+
+---
+
+### Exercise 2
+Another useful dplyr filtering helper is `between()`. What does it do? Can you use it to simplify the code needed to answer the previous exercise, part 4?
+
+**Answer:**
+
+```{r eval=FALSE}
+?between
+```
+
+```{r}
+filter(flights, between(month, 7, 9))
+```
+
+---
+
+### Exercise 3
+How many flights have a missing `dep_time`? What other variables are missing? What might these rows represent?
+
+**Answer:**
+
+`r filter(flights, is.na(dep_time)) %>% nrow` flights have missing `dep_time`.
+
+`arr_time` is also missing for these rows. Seems to be canceled flights.
+
+```{r}
+filter(flights, is.na(dep_time))
+```
+
+
+---
+
+### Exercise 4
+1) How could you use `arrange()` to sort all missing values to the start? (Hint: use `is.na()` and apply your answer to the `df` dataframe defined below):
+
+```{r}
+(df <- tibble(x = c(5, 6, 2, NA)))
+```
+
+2) Apply this answer to `flights` dataset to list the canceled flights first (assuming `NA` for `dep_delay` means the flight was canceled) and then show other flights starting with the ones with large `dep_delay` in a descending order.
+
+**Answer:**
+
+1)
+
+```{r}
+# missing value first
+arrange(df, !is.na(x))
+```
+
+```{r}
+# missing value first, then descending
+arrange(df, !is.na(x), desc(x))
+```
+
+2)
+
+```{r}
+arrange(flights, !is.na(dep_delay), desc(dep_delay))
+```
+
+We could've also used `desc(is.na(dep_time))` instead of `!is.na(dep_delay), desc(dep_delay)`.
+
+---
+
+### Exercise 5
+Brainstorm as many ways as possible to select `dep_time`, `dep_delay`, `arr_time`, and `arr_delay` from `flights`.
+
+**Answer:**
+
+```{r}
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+```
+
+All the following will result the same:
+
+```{r eval=FALSE}
+select(flights, "dep_time", "dep_delay", "arr_time", "arr_delay")
+
+select(flights, 4, 6, 7, 9)
+
+select(flights, 4:9, -c(5,8))
+
+select(flights, starts_with("dep_"), starts_with("arr_"))
+
+variables <- c("dep_time", "dep_delay", "arr_time", "arr_delay")
+select(flights, variables)
+```
+
+
+---
+
+### Exercise 6
+What happens if you include the name of a variable multiple times in a `select()` call?
+
+**Answer:**
+
+It will show up only once:
+
+```{r}
+select(flights, dep_time, dep_delay, dep_time)
+```
+
+---
+
+### Exercise 7
+Does the result of running the following code surprise you? How do the `select` helpers deal with case by default? Can you change that default?
+
+```{r}
+select(flights, contains("TIME"))
+```
+
+**Answer:**
+
+```{r}
+select(flights, contains("TIME", ignore.case = FALSE))
+```
+
+ignore.case = TRUE is the default, so we don't even need to specify it:
+
+```{r}
+select(flights, contains("TIME", ignore.case = TRUE))
+```
