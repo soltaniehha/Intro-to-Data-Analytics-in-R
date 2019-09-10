@@ -1,0 +1,79 @@
+---
+title: "Exercise"
+subtitle: "Data Transformation - Part 1"
+output: html_notebook
+---
+
+```{r echo=FALSE}
+# loading libraries
+library(tidyverse)
+library(nycflights13)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+### Exercise 1
+Find all flights that
+
+1. Had an arrival delay of two or more hours
+2. Flew to Houston (IAH or HOU)
+3. Were operated by United, American, or Delta (hint: use `airline` dataset to get the two-character carrier codes)
+4. Departed in summer (July, August, and September)
+5. Arrived more than two hours late, but didn't leave late
+6. Departed by at least an hour delay, but made up over 30 minutes in flight
+7. Departed between midnight and 6am (inclusive)
+
+**Answer:**
+
+---
+
+### Exercise 2
+Another useful dplyr filtering helper is `between()`. What does it do? Can you use it to simplify the code needed to answer the previous exercise, part 4?
+
+**Answer:**
+
+---
+
+### Exercise 3
+How many flights have a missing `dep_time`? What other variables are missing? What might these rows represent?
+
+**Answer:**
+
+---
+
+### Exercise 4
+1) How could you use `arrange()` to sort all missing values to the start? (Hint: use `is.na()` and apply your answer to the `df` dataframe defined below):
+
+```{r}
+(df <- tibble(x = c(5, 6, 2, NA)))
+```
+
+2) Apply this answer to `flights` dataset to list the canceled flights first (assuming `NA` for `dep_delay` means the flight was canceled) and then show other flights starting with the ones with large `dep_delay` in a descending order.
+
+**Answer:**
+
+---
+
+### Exercise 5
+Brainstorm as many ways as possible to select `dep_time`, `dep_delay`, `arr_time`, and `arr_delay` from `flights`.
+
+**Answer:**
+
+---
+
+### Exercise 6
+What happens if you include the name of a variable multiple times in a `select()` call?
+
+**Answer:**
+
+---
+
+### Exercise 7
+Does the result of running the following code surprise you? How do the `select` helpers deal with case by default? Can you change that default?
+
+```{r}
+select(flights, contains("TIME"))
+```
+
+**Answer:**
