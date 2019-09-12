@@ -83,7 +83,7 @@ flights
 * `mutate()` adds new variables that are functions of existing variables
 * `summarize()` reduces multiple values down to a single summary.
 
-These six functions provide the verbs for a language of data transformation These all combine naturally with `group_by()` which allows you to perform any operation "by group".
+These functions provide the verbs for a language of data transformation These all combine naturally with `group_by()` which allows you to perform any operation "by group".
 
 All verbs work similarly:
 
