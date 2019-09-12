@@ -1,0 +1,189 @@
+---
+title: "Solution"
+subtitle: "Data Transformation - Part 2"
+output: html_notebook
+---
+
+```{r}
+# loading libraries
+library(tidyverse)
+library(nycflights13)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+### Exercise 1
+Dataset: `nycflights13::flights`
+
+Currently `dep_time` and `sched_dep_time` are convenient to look at, but hard to compute with because they're not really continuous numbers, e.g., 517 is 5:17.
+
+```{r}
+select(flights, dep_time, sched_dep_time) %>% head(2)
+```
+
+If we want to do any calculations or visualization this will become a problem. For instance, if we do a histogram it will look odd as we don't have any number greater than 59 in the last two digits so the histogram bins will look different when we use a smaller bin width such as 30:
+
+```{r}
+ggplot(flights) +
+  geom_histogram(aes(x = dep_time), binwidth = 30, color = "white")
+```
+
+**Part 1)** Convert these variables to a more convenient representation of number of minutes since midnight (call them `dep_time_mins` and `sched_dep_time_mins`). Call this new dataframe `flights_new`. Redo the plot above to see the impact.
+
+**Part 2)** Let's create a new variable that categorizes the time of departure into "morning" [midnight, noon], "afternoon" (noon, 6 pm], and "evening" (6 pm, midnight). It might be simpler to use our original `dep_time` variable for this. Also, make sure to filter out the flights with missing `dep_time`. Create a bar chart that shows the distribution.
+
+Hint: You might want to use the function `cut()`. Here is an example how this function creates categories:
+
+```{r}
+numbers <- c(1, 6, 13, 19, 5, 23, 8, 9, 10)
+cut(numbers, breaks = c(0, 9, Inf))
+```
+You can provide labels:
+```{r}
+cut(numbers, breaks = c(0, 9, Inf), labels = c("single-digit", "multi-digit"))
+```
+```{r}
+data.frame(numbers = numbers) %>% 
+  mutate(digit_count = cut(numbers, 
+                           breaks = c(0, 9, Inf), 
+                           labels = c("single-digit", "multi-digit")))
+```
+
+**Answer:**
+
+**Part 1)**
+```{r}
+# assume we need to do this conversion for
+x = 517
+
+# we can use the following formula to get the number of minutes since midnight:
+(x %/% 100) * 60 + (x %% 100)
+```
+
+The only issue is midnight. It is represented by 2400, which corresponds to 1440 minutes since midnight, but it should correspond to 0. So, we can use x %% 1440 to get 0 when we have 2400:
+
+```{r}
+x = 2400
+(x %/% 100) * 60 + (x %% 100)
+```
+
+```{r}
+((x %/% 100) * 60 + (x %% 100)) %% 1440
+```
+
+```{r}
+mutate(flights,
+    dep_time_mins = ((dep_time %/% 100) * 60 + (dep_time %% 100)) %% 1440,
+    sched_dep_time_mins = ((sched_dep_time %/% 100) * 60 + (sched_dep_time %% 100)) %% 1440
+      ) -> flights_new
+
+flights_new
+```
+
+```{r}
+ggplot(flights_new) +
+  geom_histogram(aes(x = dep_time_mins), binwidth = 30, color = "white")
+```
+**Part 2)**
+
+```{r}
+flights_new %>% 
+  mutate(when = cut(dep_time, 
+                    breaks = c(-Inf, 1200, 1800, 2400),
+                    labels = c("morning", "afternoon", "evening"))) %>% 
+  select(dep_time, when, everything()) %>% 
+  filter(!is.na(when)) -> flights_final
+```
+
+```{r}
+ggplot(flights_final) +
+  geom_bar(aes(x = when))
+```
+
+### Exercise 2
+Can you reorder the bars from the bar chart in Exercise 1 based on their height (count) or an arbitrary order?
+
+Hint: In order to control the order of the bars fully, we would need to preprocess the data before passing it to ggplot. I.e., we will do the statistical transformation, rather than asking `geom_bar()` to use the `stat_count()`, for instance. In that case we should use `stat = "identity"` and do the transformation with dplyr.
+
+**Answer:** 
+
+Option A)
+
+Set order of factor levels of the categorical variable:
+
+```{r}
+flights_final$when <- factor(flights_final$when, levels = c("evening", "morning", "afternoon"))
+ggplot(flights_final) + 
+  geom_bar(aes(x = when))
+```
+
+Option B)
+
+We will perform the statistical transformation with dplyr and then pass the result to ggplot:
+
+```{r}
+flights_final %>% 
+  group_by(when) %>% 
+  summarize(count = n()) %>% 
+  arrange(count) -> flight_summary
+
+flight_summary
+```
+
+```{r}
+ggplot(flight_summary) + 
+  geom_bar(aes(x = when, y = count), stat = "identity")
+```
+We can see that arrange didn't change the order of our bars. It's because the order is tied into the order of `levels()`. We can confirm this by:
+
+```{r}
+levels(flight_summary$when)
+```
+
+We can use the function `reorder()` to change the order based on the criteria we want:
+```{r}
+ggplot(flight_summary) + 
+  geom_bar(aes(x = reorder(when, count), y = count), stat = "identity")
+```
+
+---
+
+### Exercise 3
+Look at the number of canceled flights per day. Is there a pattern? Is the proportion of canceled flights related to the average delay? (Hint: assume if `dep_delay` is `NA` then the flight is canceled)
+
+**Answer:**
+
+From graph below it looks like there is a clear relationship between the number of flights canceled and the the average delay:
+
+```{r}
+canceled_delayed <- flights %>%
+  mutate(canceled = is.na(dep_delay)) %>%
+  group_by(year, month, day) %>%
+  summarize(flights_canceled = sum(canceled),
+            avg_dep_delay = mean(dep_delay, na.rm = TRUE))
+
+ggplot(canceled_delayed, aes(x = avg_dep_delay, flights_canceled)) +
+  geom_point() +
+  geom_smooth()
+```
+
+---
+
+### Exercise 4
+Which carrier has the worst delays?
+
+**Answer:**
+
+```{r}
+flights %>%
+  group_by(carrier) %>%
+  summarise(arr_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  arrange(desc(arr_delay))
+```
+
+```{r}
+# Find the names for 2-letter carriers:
+airlines
+```
+
