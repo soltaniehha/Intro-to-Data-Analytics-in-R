@@ -4,18 +4,11 @@ subtitle: "Part 2"
 output: html_notebook
 ---
 
-```{r include=FALSE}
-# loading libraries
-library(tidyverse)
-
-# modifying chart size
-options(repr.plot.width=5, repr.plot.height=3)
-```
-
 ### Table of Contents
 
-* Add new variables with mutate()
-* Grouped summaries with summarize()
+* Add new variables with `mutate()`
+* Grouped summaries with `summarize()`
+* Group by with `group_by()`
 
 ```{r}
 # loading libraries
@@ -31,7 +24,7 @@ options(repr.plot.width=5, repr.plot.height=3)
 ## Add new variables with `mutate()`
 Besides selecting sets of existing columns, it's often useful to add new columns that are functions of existing columns. That's the job of `mutate()`.
 
-`mutate()` always adds new columns at the end of your dataset, but doesn't change the original dataframe. If you want to keep the outcome of `mutate()`, or any of the other functions we discussed above, assign the output to a new or existing object.
+`mutate()` always adds new columns at the end of your dataset, but doesn't change the original dataframe. If you want to keep the outcome of `mutate()`, or any of the other functions we discussed in the previous notebook, assign the output to a new or existing object.
 
 ```{r}
 # Starting with a smaller number of columns
@@ -42,15 +35,14 @@ flights_sml <- select(flights,
                       air_time
                      )
 
-print(flights_sml)
+flights_sml
 ```
 
 ```{r}
 mutate(flights_sml,
        gain = dep_delay - arr_delay,
        speed = distance / air_time * 60
-      ) %>%
-  print
+      )
 ```
 
 Alternatively we could've used our piping skills:
@@ -63,8 +55,7 @@ flights %>%
          air_time
         ) %>%
   mutate(gain = dep_delay - arr_delay,
-         speed = distance / air_time * 60) %>%
-  print
+         speed = distance / air_time * 60)
 ```
 
 Note that you can refer to columns that you've just created:
@@ -74,19 +65,8 @@ mutate(flights_sml,
        gain = dep_delay - arr_delay,
        hours = air_time / 60,
        gain_per_hour = gain / hours
-      ) %>%
-  print
+      )
 ```
-
----
-
-### Exercise 8
-Currently `dep_time` and `sched_dep_time` are convenient to look at, but hard to compute with because they're not really continuous numbers. Convert them to a more convenient representation of number of minutes since midnight.
-
-```{r}
-# Your answer goes here
-```
-
 
 ---
 
@@ -98,19 +78,20 @@ The last key verb is `summarize()` (or `summarise()`). It collapses a data frame
 summarize(flights, delay = mean(dep_delay, na.rm = TRUE))
 ```
 
-### `group_by`
+What happens if we don't specify `na.rm = TRUE`?
 
-`summarize()` is not terribly useful unless we pair it with `group_by()`. This changes the unit of analysis from the complete dataset to individual groups. Then, when you use the dplyr verbs on a grouped data frame they'll be automatically applied "by group". For example, if we applied exactly the same code to a data frame grouped by date, we get the average delay per date:
+### `group_by()`
+
+`summarize()` is not terribly useful unless we pair it with `group_by()`. This changes the unit of analysis from the complete dataset to individual groups. Then, when you use the dplyr verbs on a grouped data frame they'll automatically be applied "by group". For example, if we applied exactly the same code to a data frame grouped by date, we get the average delay per date:
 
 ```{r}
 # Average delay for each day
 flights %>%
   group_by(year, month, day) %>%
-  summarize(delay = mean(dep_delay, na.rm = TRUE)) %>%
-  print
+  summarize(delay = mean(dep_delay, na.rm = TRUE))
 ```
 
-**More examples**
+### Examples
 
 How does the average distance to destination impact the arrival delay on average?
 
@@ -123,38 +104,41 @@ delay <- flights %>%
            ) %>%
   filter(count > 20, dest != "HNL")  # keeping destinations with more than 20 flights that are not "HNL"
 
-# It looks like delays increase with distance up to ~750 miles 
-# and then decrease. Maybe as flights get longer there's more 
-# ability to make up delays in the air?
+delay
+```
+
+```{r}
 p <- ggplot(data = delay, mapping = aes(x = Distance, y = Delay)) +
   geom_point(aes(size = count, color = dest), alpha = 1/3) +
   geom_smooth(se = FALSE) +
-  labs(title = "How does the average distance to destination impact the arrival delay on average?",
+  labs(title = "Average distance to destination vs. arrival delay",
       caption = "The circle size shows the number of flights to that destination.")
 
-p + theme(legend.position = "none")
-ggplotly(p)  # Same plot with ggplotly()
+ggplotly(p + theme(legend.position = "none"))  # Same plot with ggplotly()
 ```
+
+It looks like delays increase with distance up to ~750 miles and then decrease. Maybe as flights get longer there's more ability to make up delays in the air?
+
+Can you figure out why we removed "HNL" (Pacific/Honolulu)?
 
 ---
 
-Number of flights during the summer
+Let's examine if the number of flights during the summer has increased:
 
 ```{r}
 flight_count <- flights %>%
   mutate(date = make_datetime(year, month, day)) %>%
   group_by(date) %>%
-  summarize(count = n(),  # counting the number of flights (per date)
-            delay = mean(arr_delay, na.rm = TRUE)  # average delay (per date)
+  summarize(count = n(),  # counting the number of flights (per day)
+            delay = mean(arr_delay, na.rm = TRUE)  # average delay (per day)
            )
+
 p <- ggplot(flight_count, aes(date, count)) +
   geom_line() +
-  labs(title = "Number of flights during the summer") +
+  labs(title = "Number of flights out of NYC") +
   theme_classic()
 
-
-p
-ggplotly(p)  # Same plot with ggplotly()
+ggplotly(p)
 ```
 
 Interestingly, all of these dips are weekends. Let's check this by creating a bar chart:
@@ -175,22 +159,3 @@ flights %>%
     theme_classic() +
     theme(axis.text.x = element_text(angle=65, vjust=0.6))
 ```
-
----
-
-### Exercise 9
-Look at the number of canceled flights per day. Is there a pattern? Is the proportion of canceled flights related to the average delay? (Hint: assume if `dep_delay` is `NA` then the flight is canceled)
-
-```{r}
-# Your answer goes here
-```
-
----
-
-### Exercise 10
-Which carrier has the worst delays?
-
-```{r}
-# Your answer goes here
-```
-
