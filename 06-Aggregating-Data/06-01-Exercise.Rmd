@@ -31,7 +31,7 @@ ggplot(flights) +
 
 **Part 1)** Convert these variables to a more convenient representation of number of minutes since midnight (call them `dep_time_mins` and `sched_dep_time_mins`). Call this new dataframe `flights_new`. Redo the plot above to see the impact.
 
-**Part 2)** Let's create a new variable that categorizes the time of departure into "morning" (midnight, noon], "afternoon" (noon, 5 pm], and "evening" (5 pm, midnight). It might be simpler to use our original `dep_time` variable for this. Also, make sure to filter out the flights with missing `dep_time`. Create a bar chart that shows the distribution.
+**Part 2)** Let's create a new variable that categorizes the time of departure into "morning" [midnight, noon], "afternoon" (noon, 6 pm], and "evening" (6 pm, midnight). It might be simpler to use our original `dep_time` variable for this. Also, make sure to filter out the flights with missing `dep_time`. Create a bar chart that shows the distribution.
 
 Hint: You might want to use the function `cut()`. Here is an example how this function creates categories:
 
