@@ -10,7 +10,7 @@ output: html_notebook
 * Grouped summaries with `summarize()`
 * Group by with `group_by()`
 
-```{r}
+```{r echo=FALSE}
 # loading libraries
 library(tidyverse)
 library(lubridate)
