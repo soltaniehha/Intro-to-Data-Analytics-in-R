@@ -1,0 +1,266 @@
+---
+title: "Tidy Data"
+subtitle: "Data Manipulation - Part 1"
+output: html_notebook
+---
+
+```{r include=FALSE}
+# loading libraries
+library(tidyverse)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+### Table of Contents
+* Introduction
+* Tidy data
+    * Spreading and gathering
+    * Separating and uniting
+* Missing values
+
+## Introduction
+Once we bring in the data from an outside source there is no guarantee that it is in a standard format that we are used to. This consistent, clean, and standard format is called **tidy data**. What exactly this tidy format is might not be something that everyone agrees on, but there are aspects of it that are agreeable. Here we will go over some of these methods, will introduce tools provided by **tidyr** and **dplyr**, and by using them will show examples on how to tidy our data and how to join multiple tidy datasets to get the appropriate data we need in our reporting and analysis.
+
+It is typical for a data science project to spend significant amount of time in tidying, transforming and manipulating the data. This is a crucial part of the project that is sometimes overlooked; the output only can get as good as the input, spending some upfront time on the data usually pays off in the end.
+
+## Tidy data
+You can represent the same underlying data in multiple ways. The example below shows the same data organized in four different ways. Each dataset shows the same values of four variables `country`, `year`, `population`, and `cases`:
+
+```{r}
+table1
+```
+
+```{r}
+table2
+```
+
+```{r}
+table3
+```
+
+Spread across two data frames:
+
+```{r}
+# cases
+table4a
+```
+
+```{r}
+# population
+table4b
+```
+
+These are all representations of the same underlying data, but they are not equally easy to use. One dataset, the tidy dataset, will be much easier to work with inside the tidyverse.
+
+There are three interrelated rules which make a dataset tidy:
+
+1. Each variable must have its own column.
+2. Each observation must have its own row.
+3. Each value must have its own cell.
+
+Figure below shows the rules visually
+
+<img src="../png/tidy-1.png" width="800px" align="center">
+
+In this example, only table1 is tidy. It's the only representation where each column is a variable.
+
+It's advantageous to have a consistent definition of *tidy* data. This allows to learn the tools that work with that structure. Another big benefit of having variables in columns and observations in rows is that it allows R's vectorized nature to stand out; this includes both the vectorized functionalities within R as well as much higher performance while performing computation within columns.
+
+dplyr, ggplot2, and all the other packages in the tidyverse are designed to work with tidy data.
+
+
+---
+
+### Spreading and Gathering
+The principles of tidy data seem so obvious that you might wonder if you'll ever encounter a dataset that isn't tidy. Unfortunately, however, most data that you will encounter will be untidy. There are two main reasons:
+
+Most people aren't familiar with the principles of tidy data, and it's hard to derive them yourself unless you spend a lot of time working with data.
+
+Data is often organized to facilitate some use other than analysis. For example, data is often organized to make data entry as easy as possible.
+
+This means for most real analyses, you'll need to do some tidying. The first step is always to figure out what the variables and observations are. Sometimes this is easy; other times you'll need to consult with the people who originally generated the data. The second step is to resolve one of two common problems:
+
+1. One variable might be spread across multiple columns.
+2. One observation might be scattered across multiple rows.
+
+Typically a dataset will only suffer from one of these problems; it'll only suffer from both if you're really unlucky! To fix these problems, you'll need the two most important functions in tidyr: `gather()` and `spread()`.
+
+#### Gathering
+A common problem is a dataset where some of the column names are not names of variables, but values of a variable. Take `table4a`: the column names `1999` and `2000` represent values of the `year` variable, and each row represents two observations, not one.
+
+```{r}
+table4a
+```
+
+To tidy a dataset like this, we need to "gather" those columns into a new pair of variables. To describe that operation we need three parameters:
+
+* The set of columns that represent values, not variables. In this example, those are the columns `1999` and `2000`.
+* The name of the variable whose values form the column names. That is called `key`, and here it is `year`.
+* The name of the variable whose values are spread over the cells. That is called `value`, and here it's the number of `cases`.
+
+Together those parameters generate the call to `gather()`:
+
+```{r}
+table4a %>% 
+  gather(`1999`, `2000`, key = "year", value = "cases")
+```
+
+In the final result, the gathered columns are dropped, and we get new `key` and `value` columns. Otherwise, the relationships between the original variables are preserved. Visually, this is shown in figure below 
+
+<img src="../png/gather-table4a.png" width="550px" align="center">
+
+We can use `gather()` to tidy `table4b` in a similar fashion. The only difference is the variable stored in the cell values:
+
+```{r}
+table4b %>% 
+  gather(`1999`, `2000`, key = "year", value = "population")
+```
+
+To combine the tidied versions of `table4a` and `table4b` into a single tibble, we need to use `dplyr::left_join()`, which you will see more details in the next notebook:
+
+```{r}
+tidy4a <- table4a %>% 
+  gather(`1999`, `2000`, key = "year", value = "cases")
+tidy4b <- table4b %>% 
+  gather(`1999`, `2000`, key = "year", value = "population")
+left_join(tidy4a, tidy4b)
+```
+
+#### Spreading
+Spreading is the opposite of gathering. You use it when an observation is scattered across multiple rows. For example, take `table2`: an observation is a country in a year, but each observation is spread across two rows:
+
+```{r}
+table2
+```
+
+To tidy this up, we first analyze the representation in similar way to `gather()`. This time, however, we only need two parameters:
+
+* The column that contains variable names, the `key` column. Here, it's `type`.
+* The column that contains values from multiple variables, the `value` column. Here it's `count`.
+
+Once we've figured that out, we can use `spread()`:
+
+```{r}
+table2 %>%
+  spread(key = type, value = count)
+```
+
+<img src="../png/spread-table2.png" width="550px" align="center">
+
+As you might have guessed from the common `key` and `value` arguments, `spread()` and `gather()` are complements. `gather()` makes wide tables narrower and longer; `spread()` makes long tables shorter and wider.
+
+---
+
+**Moving to the exercise notebook (exercises 1 & 2)**
+
+---
+
+### Separating and uniting
+So far you've learned how to tidy `table2` and `table4`, but not `table3`. `table3` has a different problem: we have one column (`rate`) that contains two variables (`cases` and `population`). To fix this problem, we'll need the `separate()` function. You'll also learn about the complement of `separate()`: `unite()`, which you use if a single variable is spread across multiple columns.
+
+#### Separate
+`separate()` pulls apart one column into multiple columns, by splitting wherever a separator character appears. Take `table3`:
+
+```{r}
+table3
+```
+
+```{r}
+table3 %>% 
+  separate(rate, into = c("cases", "population"))
+```
+
+<img src="../png/separate.png" width="550px" align="center">
+
+We could specify the separator if it is not automatically detected by `sep = "/"` parameter. 
+
+By default the new columns will have a character type. We can ask `separate()` to detect the type and convert:
+
+```{r}
+table3 %>% 
+  separate(rate, into = c("cases", "population"), convert = TRUE)
+```
+
+#### Unite
+`unite()` is the inverse of `separate()`: it combines multiple columns into a single column. You'll need it much less frequently than `separate()`, but it's still a useful tool to have in your back pocket.
+
+Consider `table5`:
+
+```{r}
+table5
+```
+
+```{r}
+table5 %>% 
+  unite(year, century, year)
+```
+
+<img src="../png/unite.png" width="550px" align="center">
+
+#### Exercise
+Can you fix the column year so it shows as integer?
+
+```{r}
+# Your answer goes here
+```
+
+---
+
+## Missing values
+Changing the representation of a dataset brings up an important subtlety of missing values. Surprisingly, a value can be missing in one of two possible ways:
+
+* Explicitly, i.e. flagged with `NA`.
+* Implicitly, i.e. simply not present in the data.
+
+Let's illustrate this idea with a very simple dataset:
+
+```{r}
+stocks <- tibble(
+  year   = c(2015, 2015, 2015, 2015, 2016, 2016, 2016),
+  qtr    = c(   1,    2,    3,    4,    2,    3,    4),
+  return = c(1.88, 0.59, 0.35,   NA, 0.92, 0.17, 2.66)
+)
+stocks
+```
+
+There are two missing values in this dataset:
+
+* The return for the fourth quarter of 2015 is explicitly missing
+* The return for the first quarter of 2016 is implicitly missing, because it simply does not appear in the dataset.
+
+The way that a dataset is represented can make implicit values explicit. For example, we can make the implicit missing value explicit by putting years in the columns:
+
+```{r}
+stocks %>%
+  spread(key = "year", value = "return")
+```
+
+We can then use `gather()` to reshape it back to tidy, but this time with all the explicit and implicit missing values:
+
+```{r}
+stocks %>% 
+  spread(year, return) %>% 
+  gather(year, return, `2015`:`2016`)
+```
+
+Because these explicit missing values may not be important in other representations of the data, you can set `na.rm = TRUE` in `gather()` to turn explicit missing values implicit:
+
+```{r}
+stocks %>% 
+  spread(year, return) %>% 
+  gather(year, return, `2015`:`2016`, na.rm = TRUE)
+```
+
+Another important tool for making missing values explicit in tidy data is `complete()`:
+
+```{r}
+stocks %>% 
+  complete(year, qtr)
+```
+
+`complete()` takes a set of columns, and finds all unique combinations. It then ensures the original dataset contains all those values, filling in explicit `NA`s where necessary.
+
+---
+
+**Moving to the exercise notebook (exercises 3, 4, 5 & 6)**
