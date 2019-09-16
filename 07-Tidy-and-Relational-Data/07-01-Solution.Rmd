@@ -1,0 +1,208 @@
+---
+title: "Solution"
+subtitle: "Tidy Data - Data Manipulation (Part 1)"
+output: html_notebook
+---
+
+```{r include=FALSE}
+# loading libraries
+library(tidyverse)
+
+# modifying chart size
+options(repr.plot.width=5, repr.plot.height=3)
+```
+
+### Exercise 1
+Why does spreading this tibble fail? How could you add a new column to fix the problem?
+
+```{r}
+people <- tribble(
+  ~name,             ~key,    ~value,
+  #-----------------|--------|------
+  "Phillip Woods",   "age",       45,
+  "Phillip Woods",   "height",   186,
+  "Phillip Woods",   "age",       50,
+  "Jessica Cordero", "age",       37,
+  "Jessica Cordero", "height",   156
+)
+people
+```
+
+**Answer:**
+
+Spreading the data frame fails because there are two rows with "age" for "Phillip Woods". If we added another column with an indicator for the number observation it is, the code will work.
+
+```{r}
+people <- tribble(
+  ~name,             ~key,    ~value, ~obs,
+  #-----------------|--------|------|------
+  "Phillip Woods",   "age",       45, 1,
+  "Phillip Woods",   "height",   186, 1,
+  "Phillip Woods",   "age",       50, 2,
+  "Jessica Cordero", "age",       37, 1,
+  "Jessica Cordero", "height",   156, 1
+)
+spread(people, key, value)
+```
+
+---
+
+#### Exercise 2
+Tidy the simple tibble below. Do you need to spread or gather it? What are the variables?
+
+```{r}
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes",     NA,    10,
+  "no",      20,    12
+)
+```
+
+**Answer:**
+
+we need to use `gather()`. The variables in this data are
+
+* `sex` ("female", "male")
+* `pregnant` ("yes", "no")
+* `count`, which is representing the number of observations.
+
+The observations in this data are unique combinations of sex and pregnancy status.
+
+```{r}
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes",     NA,    10,
+  "no",      20,    12
+)
+
+preg %>%
+  gather(male, female, key = "sex", value = "count")
+```
+
+To avoid printing the NA for "yes", "male" combination we can use `na.rm = TRUE` param.
+
+Since this missing value is due to structural reasons it's ok to remove it...
+
+```{r}
+preg %>%
+  gather(male, female, key = "sex", value = "count", na.rm = TRUE)
+```
+
+---
+
+### Exercise 3
+Chapter 12.6 of **R for Data Science** represents a real-world data tidying case study. Let’s pull together everything you’ve learned to tackle a realistic data tidying problem. We will list the steps needed to tidy the given dataframe, `tidyr::who`, here:
+
+* The `who` dataset contains tuberculosis (TB) cases broken down by year, country, age, gender, and diagnosis method. The best place to start is almost always to gather together the columns that are not variables. Let’s have a look at what we’ve got:
+  * It looks like `country`, `iso2`, and `iso3` are three variables that redundantly specify the country.
+  * `year` is clearly also a variable.
+  * We don’t know what all the other columns are yet, but given the structure in the variable names (e.g. `new_sp_m014`, `new_ep_m014`, `new_ep_f014`) these are likely to be values, not variables.
+  
+1. So we need to gather together all the columns from `new_sp_m014` to `newrel_f65`. We don’t know what those values represent yet, so we’ll give them the generic name "`key`". We know the cells represent the count of cases, so we’ll use the variable `cases`. There are a lot of missing values in the current representation, so for now we’ll use `na.rm` just so we can focus on the values that are present.
+2. We can get some hint of the structure of the values in the new key column by counting them:
+3. Use the function `str_replace()` from stringr to replace `newrel` with `new_rel` in the `key` column.
+4. Split the codes in `key` at each underscore. Give the generated columns names: "new", "type", "sexage".
+5. Variable `new` is not useful as all of the cases are "new". Can you check that by counting over that column? Remove that column as well as `iso2` and `iso3`.
+6. Next we’ll separate `sexage` into `sex` and `age` by splitting after the first character.
+7. The `who` dataset is now tidy! Can you gather all of the operations into one chain of commands?
+
+**Answer:**
+
+```{r}
+who
+```
+
+```{r}
+who1 <- who %>% 
+  gather(new_sp_m014:newrel_f65, key = "key", value = "cases", na.rm = TRUE)
+who1
+```
+
+```{r}
+who1 %>% 
+  count(key)
+```
+
+```{r}
+who2 <- who1 %>% 
+  mutate(key = stringr::str_replace(key, "newrel", "new_rel"))
+who2
+```
+
+```{r}
+who3 <- who2 %>% 
+  separate(key, c("new", "type", "sexage"), sep = "_")
+who3
+```
+
+```{r}
+who3 %>% 
+  count(new)
+
+who4 <- who3 %>% 
+  select(-new, -iso2, -iso3)
+```
+
+```{r}
+who5 <- who4 %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+who5
+```
+
+```{r}
+who %>%
+  gather(key, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(key = stringr::str_replace(key, "newrel", "new_rel")) %>%
+  separate(key, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+```
+
+---
+
+### Exercise 4
+What happens if you neglect the `mutate()` step in the previous exercise? (`mutate(key = str_replace(key, "newrel", "new_rel")`)
+
+**Answer:**
+
+```{r}
+who3a <- who1 %>%
+  separate(key, c("new", "type", "sexage"), sep = "_")
+who3a
+```
+
+```{r}
+filter(who3a, new == "newrel")
+```
+
+---
+
+### Exercise 5
+We claimed that `iso2` and `iso3` were redundant with country. Confirm this claim.
+
+**Answer:**
+
+```{r}
+select(who3, country, iso2, iso3) %>%
+  distinct() %>%
+  group_by(country) %>%
+  filter(n() > 1)
+```
+
+---
+
+### Exercise 6
+For each `year`, and `sex` compute the total number of cases of TB. Plot a line chart and show the total number of cases reported for each gender. 
+
+**Asnwer:**
+
+```{r}
+who5 %>%
+  group_by(year, sex) %>%
+  summarise(cases = sum(cases)) %>% 
+  mutate(sex = factor(sex, levels = c("m", "f"))) %>% 
+  arrange(year) %>% 
+  ggplot() +
+  geom_line(aes(x=year, y=cases, color = sex))
+```
+

@@ -1,6 +1,8 @@
 /sandbox/*
 !/sandbox/png
-Rmd
+
+/Rmd
+02-Visualization-II/Assignment-1.Rmd
 
 # History files
 .Rhistory
