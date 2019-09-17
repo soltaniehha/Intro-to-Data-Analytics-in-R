@@ -135,6 +135,10 @@ A primary key and the corresponding foreign key in another table form a relation
 
 ---
 
+#### Moving to the exercise notebook (exercise 1)
+
+---
+
 ### Mutating Joins
 Joins are used to combine a pair of tables. These are known as mutating joins because we will be adding new variables from another table. This is possible through the foreign key. For instance, we can combine `flights` dataframe with `airlines` to get the full names of 2-letter `carrier` by using a **left join**:
 
@@ -283,6 +287,10 @@ flights %>%
 
 ---
 
+#### Moving to the exercise notebook (exercises 2 & 3)
+
+---
+
 ### Filtering Joins 
 Filtering joins match observations in the same way as mutating joins, but affect the observations, not the variables. There are two types:
 
@@ -322,6 +330,10 @@ flights %>%
   anti_join(planes, by = "tailnum") %>%
   count(tailnum, sort = TRUE)
 ```
+
+---
+
+#### Moving to the exercise notebook (exercises 4, 5 & 6)
 
 ---
 
