@@ -16,15 +16,57 @@ options(repr.plot.width=5, repr.plot.height=3)
 ### Exercise 1
 Identify the keys in ggplot2::diamonds
 
+**Answer:**
+
 ```{r}
-# Your answer goes here
+diamonds %>%
+  count(carat, cut, color, clarity, depth, table, x, y, z, price) %>%
+  filter(n > 1)
 ```
+
+Even if grouped by all the variables we still see that there are groups with more than one record. We have duplicates. We can also draw the same conclusion by checking the number of rows and number of unique records:
+
+```{r}
+nrow(diamonds)
+```
+
+```{r}
+nrow(unique(diamonds))
+```
+
+We could instead use a row number to distinguish between records:
+
+```{r}
+diamonds %>%
+  mutate(row_n = row_number())
+```
+
+---
 
 ### Exercise 2
 Add the location of the origin and destination (i.e. the `lat` and `lon`) to flights.
 
+**Answer:**
+
 ```{r}
-# Your answer goes here.
+airport_locations <- airports %>%
+  select(faa, lat, lon)
+
+flights %>%
+  select(year:day, hour, origin, dest) %>%
+  left_join(airport_locations, by = c("origin" = "faa")) %>%
+  left_join(airport_locations, by = c("dest" = "faa"))
+```
+
+This default can be overridden using the `suffix` argument:
+
+```{r}
+flights %>%
+  select(year:day, hour, origin, dest) %>%
+  left_join(airport_locations, by = c("origin" = "faa")) %>%
+  left_join(airport_locations, by = c("dest" = "faa"),
+           suffix = c(".origin", ".dest")) %>%
+  print
 ```
 
 ---
@@ -32,7 +74,7 @@ Add the location of the origin and destination (i.e. the `lat` and `lon`) to fli
 ### Exercise 3
 What happened on June 13 2013? Display the spatial pattern of delays, and then use Google to cross-reference with the weather.
 
-Hint: Use the following code as a template for creating a simple US map and annotate it useful information. 
+Hint: Use the following code as a template for creating a simple US map and annotate it with useful information. 
 
 Note: You may need to install/load **maps** library.
 
@@ -45,25 +87,76 @@ airports %>%
     coord_quickmap()
 ```
 
+**Answer:**
+
 ```{r}
-# Your answer goes here.
+flights %>%
+  filter(year == 2013, month == 6, day == 13) %>%  # June 13 2013
+  group_by(dest) %>%
+  summarise(delay = mean(arr_delay, na.rm = TRUE)) %>%
+  inner_join(airports, by = c("dest" = "faa")) %>% 
+  filter(lon < 0 & between(lat, 25, 50)) %>%  # limiting the map to US mainland boarders for clarity
+  filter(delay > 60) %>%  # only destinations with delays more than one hour
+  ggplot(aes(y = lat, x = lon, size = delay)) +
+    borders("state") + 
+    geom_point() +
+    coord_quickmap()
 ```
 
-### Exercise 4
-What does it mean for a flight to have a missing `tailnum`? What do the tail numbers that don't have a matching record in planes have in common? (Hint: one variable explains ~90% of the problems.)
+Looks like there were significant delays on the East Coast and South West. Here is what happened on that day: https://en.wikipedia.org/wiki/June_12%E2%80%9313,_2013_derecho_series
+
+We can also map the percentage of the flights that were canceled per destination, we see a similar pattern:
 
 ```{r}
-# Your answer goes here
+flights %>%
+  filter(year == 2013, month == 6, day == 13) %>%  # June 13 2013
+  group_by(dest) %>%
+  summarize(percent_canceled = sum(is.na(dep_delay))/n() * 100,
+           n = n()) %>%
+  filter(n >= 5) %>%  # keeping destinations that at least had 5 flights from NYC that day
+  inner_join(airports, by = c("dest" = "faa")) %>% 
+  filter(lon < 0 & between(lat, 25, 50)) %>%  # limiting the map to US mainland boarders for clarity
+  ggplot(aes(y = lat, x = lon, size = percent_canceled)) +
+    borders("state") + 
+    geom_point() +
+    coord_quickmap()
 ```
 
 ---
 
-### Exercise 5
-Filter `flights` to only show flights with planes that have flown at least 100 flights.
+### Exercise 4
+What does it mean for a flight to have a missing `tailnum`? What do the tail numbers that don't have a matching record in planes have in common? (Hint: one variable explains ~90% of the problems.)
+
+**Asnwer:**
+
+American Airlines (AA) and Envoy Airlines (MQ) don't report tail numbers.
 
 ```{r}
-# Your answer goes here
+flights %>%
+  anti_join(planes, by = "tailnum") %>%
+  count(carrier, sort = TRUE)
 ```
+
+
+---
+
+### Exercise 5
+Filter `flights` to only show those with planes that have flown at least 100 flights.
+
+***Answer:**
+
+```{r}
+planes_w_over_100 <- flights %>%
+  group_by(tailnum) %>%
+  count() %>%
+  filter(n > 100)
+```
+
+```{r}
+flights %>%
+  semi_join(planes_w_over_100, by = "tailnum")
+```
+
 
 ---
 
@@ -71,6 +164,8 @@ Filter `flights` to only show flights with planes that have flown at least 100 f
 * What does `anti_join(flights, airports, by = c("dest" = "faa"))` tell you? 
 * What does `anti_join(airports, flights, by = c("faa" = "dest"))` tell you?
 
-```{r}
-# Your answer goes here
-```
+**Answer:**
+
+* `anti_join(flights, airports, by = c("dest" = "faa"))` are flights that go to an airport that is not in FAA list of destinations, likely foreign airports.
+
+* `anti_join(airports, flights, by = c("faa" = "dest"))` are US airports that don't have a flight in the data, meaning that there were no flights to that airport directly from New York in 2013.
