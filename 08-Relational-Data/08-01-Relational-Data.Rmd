@@ -4,7 +4,7 @@ subtitle: "Data Manipulation - Part 2"
 output: html_notebook
 ---
 
-```{r echo=FALSE}
+```{r include=FALSE}
 # loading libraries
 library(tidyverse)
 library(nycflights13)
@@ -80,7 +80,7 @@ There are two types of keys:
 
 A variable can be both a primary key and a foreign key. For example, `origin` is part of the `weather` primary key, and is also a foreign key for the `airport` table.
 
-Once you've identified the primary keys in your tables, it's good practice to verify that they do indeed uniquely identify each observation. One way to do that is to `count()` the primary keys and look for entries where n is greater than one:
+Once you've identified the primary keys in your tables, it's a good practice to verify that they do indeed uniquely identify each observation. One way to do that is to `count()` the primary keys and look for entries where n is greater than one:
 
 ```{r}
 planes %>% 
@@ -101,15 +101,13 @@ what's the primary key in the flights table? You might think it would be the dat
 ```{r}
 flights %>% 
   count(year, month, day, flight) %>% 
-  filter(n > 1) %>%
-  head
+  filter(n > 1)
 ```
 
 ```{r}
 flights %>% 
   count(year, month, day, tailnum) %>% 
-  filter(n > 1) %>%
-  head
+  filter(n > 1)
 ```
 
 Each flight number can be used more than once a day. With the existing data in `flights` table we can see the following combination could be the key:
@@ -128,13 +126,16 @@ We should be cautious when defining the primary key (PK) for a table. It could b
 flights %>%
   arrange(year, month, day, origin, dest, flight, tailnum) %>%
   mutate(row_n = row_number()) %>%
-  select(row_n, everything()) %>%
-  print
+  select(row_n, everything())
 ```
 
 That makes it easier to match observations if you've done some filtering and want to check back in with the original data.
 
 A primary key and the corresponding foreign key in another table form a relation.
+
+---
+
+#### Moving to the exercise notebook (exercise 1)
 
 ---
 
@@ -144,8 +145,7 @@ Joins are used to combine a pair of tables. These are known as mutating joins be
 ```{r}
 flights %>%
   left_join(airlines, by = "carrier") %>%
-  select(carrier, name, everything()) %>%
-  head
+  select(carrier, name, everything())
 ```
 
 We are going to use a visual representation to illustrate different types of joins. Consider these 2 dataframes: `x` and `y`
@@ -192,8 +192,7 @@ The simplest type of join is the inner join. An inner join matches pairs of obse
 We use `by` parameter to tell dplyr which variable is the key:
 
 ```{r}
-x %>% 
-  inner_join(y, by = "key")
+inner_join(x, y, by = "key")
 ```
 
 Note that unmatched rows are not included in the result. This means that inner joins are usually not appropriate for use in analysis because it's too easy to lose observations.
@@ -201,11 +200,11 @@ Note that unmatched rows are not included in the result. This means that inner j
 ---
 
 ## Outer joins
-An inner join keeps observations that appear in both tables. An outer join keeps observations that appear in at least one of the tables. There are three types of outer joins:
+An outer join keeps observations that appear in at least one of the tables. There are three types of outer joins:
 
-* A **left join** keeps all observations in `x`.
-* A **right join** keeps all observations in `y`.
-* A **full join** keeps all observations in `x` and `y`.
+* A **left join** keeps all observations in the left dataframe, `x`.
+* A **right join** keeps all observations in in the right dataframe, `y`.
+* A **full join** keeps all observations in both dataframes, `x` and `y`.
 
 <img src="../png/join-outer.png" align="center" width="450px">
 
@@ -247,21 +246,21 @@ Base R also provides join functionality by `merge()` function, but using dplyr j
 **Handling duplicate keys:**
 
 ```{r}
-x <- tribble(
+a <- tribble(
   ~key, ~val_x,
      1, "x1",
      2, "x2",
      2, "x3",
      3, "x4"
 )
-y <- tribble(
+b <- tribble(
   ~key, ~val_y,
      1, "y1",
      2, "y2",
      2, "y3",
      3, "y4"
 )
-left_join(x, y, by = "key")
+left_join(a, b, by = "key")
 ```
 
 #### Defining the key columns
@@ -269,25 +268,26 @@ The default, `by = NULL`, uses all variables that appear in both tables, the so 
 
 ```{r}
 flights %>% 
-  left_join(weather) %>%
-  print
+  left_join(weather)
 ```
 
 We can also specify what key to use:
 
 ```{r}
 flights %>% 
-  left_join(planes, by = "tailnum") %>%
-  print
+  left_join(planes, by = "tailnum")
 ```
 
 `by = c("a" = "b")`. This will match variable `a` in table `x` to variable `b` in table `y`. The variables from `x` will be used in the output:
 
 ```{r}
 flights %>% 
-  left_join(airports, by = c("dest" = "faa")) %>%
-  print
+  left_join(airports, by = c("dest" = "faa"))
 ```
+
+---
+
+#### Moving to the exercise notebook (exercises 2 & 3)
 
 ---
 
@@ -301,17 +301,16 @@ Semi-joins are useful for matching filtered summary tables back to the original 
 
 ```{r}
 # Top 10 most favorite destinations
-top_dest <- flights %>%
-  count(dest, sort = TRUE) %>%
-  head(10)
+flights %>%
+  count(dest, sort = TRUE) %>% 
+  head(10) -> top_dest
 ```
 
 The following gives all the flight records to the top 10 destinations:
 
 ```{r}
 flights %>% 
-  semi_join(top_dest) %>%
-  print
+  semi_join(top_dest, by = "dest")
 ```
 
 Graphically, a semi-join looks like this:
@@ -329,9 +328,12 @@ Anti-joins are useful for diagnosing join mismatches. For example, when connecti
 ```{r}
 flights %>%
   anti_join(planes, by = "tailnum") %>%
-  count(tailnum, sort = TRUE) %>%
-  print
+  count(tailnum, sort = TRUE)
 ```
+
+---
+
+#### Moving to the exercise notebook (exercises 4, 5 & 6)
 
 ---
 
@@ -380,11 +382,11 @@ The four possibilities are:
 intersect(df1, df2)
 ```
 
-note that union automatically filters the overlapping records, hence 3 rows!
-
 ```{r}
 union(df1, df2)
 ```
+
+note that union automatically filters the overlapping records, hence 3 rows!
 
 ```{r}
 setdiff(df1, df2)

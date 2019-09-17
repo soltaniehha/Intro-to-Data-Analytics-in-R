@@ -1,5 +1,5 @@
 ---
-title: "Solution"
+title: "Exercise"
 subtitle: "Tidy Data - Data Manipulation (Part 1)"
 output: html_notebook
 ---
