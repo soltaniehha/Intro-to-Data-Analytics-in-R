@@ -1,0 +1,588 @@
+---
+title: "Exploratory Data Analysis"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+# loading libraries
+library(tidyverse)
+library(ggcorrplot)
+library(rsample)
+library(recipes)
+library(caret)
+library(e1071)
+library(pROC)
+
+# Loading functions from functions.R
+source("09-functions.R")
+
+# modifying chart size
+options(repr.plot.width=6, repr.plot.height=4)
+```
+
+
+<img src="../png/EDA.png" align="center" width="700px">
+
+<div style="text-align: right"> *image from [Wikipedia](https://en.wikipedia.org/wiki/Exploratory_data_analysis)* </div>
+
+
+## Customer Churn
+
+Also known as customer attrition, or customer turnover is the loss of clients or customers. Customer churn is a critical metric because it is much less expensive to retain existing customers than it is to acquire new ones. 
+
+Companies usually make a distinction between voluntary churn and involuntary churn. In most analyses involuntary churn is excluded. 
+
+Predictive analytics uses machine learning to predict the likelihood of a customer churning. These models will identify a small subgroup of potential customers that are at a higher risk of abandoning the company. This empowers the company to focus on the subset of the customers who are most likely to churn and through customer retention marketing programs stop some of that to happen.
+
+## Data
+
+**Telco Customer Churn**
+
+The data was downloaded from IBM Sample Data Sets: https://www.ibm.com/communities/analytics/watson-analytics-blog/guide-to-sample-datasets/
+
+Each row represents a customer, each column contains customer's attributes described as below:
+
+* **customerID**: Customer ID
+* **gender**: Customer gender (female, male)
+* **SeniorCitizen**: Whether the customer is a senior citizen or not (1, 0)
+* **Partner**: Whether the customer has a partner or not (Yes, No)
+* **Dependents**: Whether the customer has dependents or not (Yes, No)
+* **tenure**: Number of months the customer has stayed with the company
+* **PhoneService**: Whether the customer has a phone service or not (Yes, No)
+* **MultipleLines**: Whether the customer has multiple lines or not (Yes, No, No phone service)
+* **InternetService**: Customer's internet service provider (DSL, Fiber optic, No)
+* **OnlineSecurity**: Whether the customer has online security or not (Yes, No, No internet service)
+* **OnlineBackup**: Whether the customer has online backup or not (Yes, No, No internet service)
+* **DeviceProtection**: Whether the customer has device protection or not (Yes, No, No internet service)
+* **TechSupport**: Whether the customer has tech support or not (Yes, No, No internet service)
+* **StreamingTV**: Whether the customer has streaming TV or not (Yes, No, No internet service)
+* **StreamingMovies**: Whether the customer has streaming movies or not (Yes, No, No internet service)
+* **Contract**: The contract term of the customer (Month-to-month, One year, Two year)
+* **PaperlessBilling**: Whether the customer has paperless billing or not (Yes, No)
+* **PaymentMethod**: The customer's payment method (Electronic check, Mailed check, Bank transfer (automatic), Credit card (automatic))
+* **MonthlyCharges**: The amount charged to the customer monthly
+* **TotalCharges**: The total amount charged to the customer
+* **Churn**: Whether the customer churned or not (Yes or No)
+
+The data set includes information about:
+
+* Customers who left - the column is called `Churn`
+* Services that each customer has signed up for - phone, multiple lines, internet, online security, online backup, device protection, tech support, and streaming TV and movies
+* Customer account information - how long they've been a customer, contract, payment method, paperless billing, monthly charges, and total charges
+* Demographic info about customers - gender, age range, and if they have partners and dependents
+
+Loading the data into a dataframe:
+
+```{r}
+telcoChurnDf <- read_csv("../data/Telco-Customer-Churn.csv",
+                         col_types = list(gender = col_factor(),
+                                          SeniorCitizen = col_factor(),
+                                          Partner = col_factor(),
+                                          Dependents = col_factor(),
+                                          PhoneService = col_factor(),
+                                          MultipleLines = col_factor(),
+                                          InternetService = col_factor(),
+                                          OnlineSecurity = col_factor(),
+                                          OnlineBackup = col_factor(),
+                                          DeviceProtection = col_factor(),
+                                          TechSupport = col_factor(),
+                                          StreamingTV = col_factor(),
+                                          StreamingMovies = col_factor(),
+                                          Contract = col_factor(),
+                                          PaperlessBilling = col_factor(),
+                                          PaymentMethod = col_factor(),
+                                          Churn = col_factor()))
+```
+
+```{r}
+glimpse(telcoChurnDf)
+```
+
+7043 observations with 21 variables.
+
+All the columns have been loaded with the correct data type.
+
+Can you spot any missing values?
+
+```{r}
+summary(telcoChurnDf)
+```
+
+Looks like `TotalCharges` has 11 missing values.
+
+**Checking for missing value**
+
+We could also separately check for missing values. Below we are using `map_int()` from the package *purrr*:
+```{r}
+map_int(telcoChurnDf, function(x) sum(is.na(x)))
+```
+
+Let's have a look at the rows that are missing `TotalCharges`:
+```{r}
+telcoChurnDf %>%
+  filter(is.na(TotalCharges))
+```
+
+* There are only 11 missing data in the `TotalCharges` field. Everything about these customers seem normal but perhaps they are new so they haven't received any charges yet. Since this is not a significant number of customers we will remove them from the dataset.
+* `customerID` has no potential predictive or descriptive power, so we will drop that column.
+* `Churn` column will be used very often, for a higher visibility let's bring that to the front.
+* We will leave the original dataset (`telcoChurnDf`) untouched, and save all of these changes to a new dataframe (`churnDf`):
+
+```{r}
+# Remove unnecessary data
+churnDf <- telcoChurnDf %>%
+  select(-customerID) %>% # Dropping customerID column since has no predictive info
+  drop_na() %>% # This will remove 11 rows where TotalCharges is NA
+  select(Churn, everything()) # Reordering the columns to keep churn as first
+```
+
+There are three continuous variables:
+* `Tenure`
+* `MonthlyCharges`
+* `TotalCharges` 
+
+Everything else is categorical. `SeniorCitizen` is in integer format, that can be explicitly changed to categorical as well:
+
+```{r}
+churnDf$SeniorCitizen <- ifelse(churnDf$SeniorCitizen==1, 'Yes', 'No')
+```
+
+```{r}
+glimpse(churnDf)
+```
+
+## Visualizing the categorical variables with respect to `Churn`
+
+Create a bar chart showing the distribution of churned customers:
+
+```{r}
+ggplot(churnDf, aes(x=Churn, fill = Churn)) +
+  geom_bar(alpha = 2/3) +
+  labs(y = "Count") +
+  geom_text(aes(y = (..count..), 
+                label = paste0(round(..count../sum(..count..)*100, 1), "%")), 
+            stat = "count", color = "#230e0d", vjust = 1) + 
+  scale_fill_manual( values = c("#37bf49", "#c40505")) +
+  theme_minimal() -> p1
+p1
+```
+
+```{r}
+multiplot(p1, 
+          Churn_vs_var_plot(churnDf, "gender"),
+          Churn_vs_var_plot(churnDf, "SeniorCitizen"),
+          Churn_vs_var_plot(churnDf, "Partner"),
+          layout=matrix(c(1,2,3,4),2,2,byrow=TRUE))
+```
+
+* **`Churn`** - The data shows that about one forth of the customers churned.
+* **`gender`** - The churn percent is almost equal for both Male and Female.
+* **`SeniorCitizen`** - The rate of churn is almost double in case of senior citizens.
+* **`Partner`** - Customers with partners have lower churn rate.
+
+Create a plot of with `multiplot()` describing Dependents, PhoneService, MultipleLines, and InternetService:
+```{r}
+multiplot(Churn_vs_var_plot(churnDf, "Dependents"),
+          Churn_vs_var_plot(churnDf, "PhoneService"),
+          Churn_vs_var_plot(churnDf, "MultipleLines"),
+          Churn_vs_var_plot(churnDf, "InternetService"),
+          layout=matrix(c(1,2,3,4),2,2,byrow=TRUE))
+```
+
+* **`Dependents`** - Customers with dependents have lower churn rate (almost half the ones without dependents).
+* **`PhoneService`** - There is no significant difference among the ones with phone service and without.
+* **`MultipleLines`** - There is no significant difference among the ones with multiple lines and without.
+* **`InternetService`** - Seems that the customers with Fiber Optic Internet Service have a much higher churn rate compared to the ones with DSL or no Internet Services. We see a very small rate of leaving for customers with no internet services.
+
+```{r}
+multiplot(Churn_vs_var_plot(churnDf, "OnlineSecurity", F),
+          Churn_vs_var_plot(churnDf, "OnlineBackup", F),
+          Churn_vs_var_plot(churnDf, "DeviceProtection", F),
+          Churn_vs_var_plot(churnDf, "TechSupport", F),
+          layout=matrix(c(1,2,3,4),2,2,byrow=TRUE))
+```
+
+* Customers who did not use these services left the company at a much higher rate: **`OnlineSecurity`**, **`OnlineBackup`**, **`DeviceProtection`**, and **`TechSupport`**.
+
+```{r}
+multiplot(Churn_vs_var_plot(churnDf, "StreamingTV"),
+          Churn_vs_var_plot(churnDf, "StreamingMovies"),
+          Churn_vs_var_plot(churnDf, "Contract"),
+          Churn_vs_var_plot(churnDf, "PaperlessBilling"),
+          layout=matrix(c(1,2,3,4), 2, 2, byrow=TRUE))
+```
+
+* We saw that customers with no internet service have a higher tendency to stick with the company, hence a very low churn rate. This is also evident from **`StreamingTV`** and **`StreamingMovies`**.
+* **`Contract`** - A large percentage of customers with "Month-to-Month" contract have left the company, when compared to the customers that are bound to one or two years contract.
+* **`PaperlessBilling`** - Churn percent is higher in case of customers having paperless billing option.
+
+```{r}
+Churn_vs_var_plot(churnDf, "PaymentMethod")
+```
+
+* **`PaymentMethod`** - Customers who have `ElectronicCheck` as their `PaymentMethod` tend to leave the platform more when compared to other options.
+
+## Visualizing the three continuous variables with respect to `Churn`:
+
+### Tenure
+Show the distribution of tenure for each churn catergory with a boxplot, violinplot or both:
+```{r}
+ggplot(churnDf, aes(y = tenure, x = Churn, fill = Churn, 
+                    color = Churn, alpha = 1/2)) + 
+  geom_violin(trim = T, show.legend = F) +
+  geom_boxplot(width = 0.1, show.legend = F, color = "black") +
+  scale_fill_manual(values = c("#37bf49", "#c40505")) +
+  scale_color_manual(values = c("#37bf49", "#c40505")) +
+#  geom_jitter(size = 0.1, width = 0.05, alpha = 1/10, color = "black", show.legend = F) +
+  labs(y = "Tenure (months)") +
+  theme_minimal()
+```
+
+* **`tenure`** - Median tenure of customers who left is only 10 months, while the median for the group that hasn't churned is about 38 months. We see many customers who use the service for just 1 month (perhaps tourists).
+
+Let's continue with exploring the `tenure` variable.
+
+Adding a new variable called `tenureY` which will round months into integer years:
+```{r}
+churnDf <- churnDf %>% 
+  mutate(tenureY = ceiling(tenure/12))
+```
+Now we obtain a summary of the churnDf DF to calculate number of customers in each bin, avergae, number of churned customers in the bin, and churn rate:
+```{r}
+hist_summary <- churnDf %>%
+  group_by(tenureY) %>%
+  summarize(Freq = n(),
+            n_churn = sum(Churn=='Yes')) %>%
+  mutate(percentage = round(n_churn/Freq*100, 1))
+hist_summary
+```
+Creating a histogram from the new tenure (year) variable and calculated values above. Also, adding a bar chart to shot the churn for each bucket:
+```{r}
+hist_summary %>%
+  ggplot() +
+    geom_bar(aes(x = tenureY, y = Freq, fill = tenureY), width = 0.9, 
+             stat = "identity",
+             show.legend = F, alpha = 2/3) +
+    geom_line(aes(x = tenureY, y = percentage*25), linetype = "dashed") +
+    labs(y = "Count", x = "Tenure [Years]") +
+    scale_y_continuous(limits = c(0, 2500),
+                       sec.axis = sec_axis(~./25, name = "Churn Rate [%]")) +
+    theme_minimal()
+```
+
+### Monthly Charges
+
+```{r}
+ggplot(churnDf, aes(y = MonthlyCharges, x = Churn, fill = Churn, color = Churn, alpha = 1/2)) + 
+  geom_violin(trim = T, show.legend = F) +
+  geom_boxplot(width = 0.1, show.legend = F, color = "black") +
+  scale_fill_manual(values = c("#37bf49", "#c40505")) +
+  scale_color_manual(values = c("#37bf49", "#c40505")) +
+  geom_jitter(size = 0.1, width = 0.05, alpha = 1/10, color = "black", show.legend = F) +
+  labs(y = "Monthly Charges ($)") +
+  theme_minimal()
+```
+
+* **`MonthlyCharges`** - Customers who have churned have higher monthly charges on average
+
+```{r}
+# Monthly charge plot
+
+# Creating bins for MonthlyCharges
+churnDf <- churnDf %>% 
+  mutate(binCharges = (MonthlyCharges %/% 10) * 10) 
+
+# Now we obtain a summary of the churnDf DF to calculate number of customers in each bin, avergae, number of churned customers in the bin, and churn rate
+hist_summary2 <- churnDf %>%
+  group_by(binCharges) %>%
+  summarize(Freq = n(),
+            n_churn = sum(Churn=='Yes')) %>%
+  mutate(percentage = round(n_churn/Freq*100, 1))
+
+# Plot a bar chart based on the hist_summary. Dashed line shows the churn rate in each bucket
+# Color of the bins correspond the average of MonthlyCharges in the bin
+hist_summary2 %>%
+  ggplot() +
+    geom_bar(aes(x = binCharges, y = Freq, fill = binCharges), width = 5, 
+             stat = "identity",
+             show.legend = F, alpha = 2/3) +
+    geom_line(aes(x = binCharges, y = percentage*11), linetype = "dashed") +
+    labs(y = "Count", x = "Monthly Charges [$]") +
+    scale_y_continuous(limits = c(0, 1100),
+                       sec.axis = sec_axis(~./11, name = "Churn Rate [%]")) +
+    theme_minimal()
+```
+
+### Total Charges
+
+```{r}
+ggplot(churnDf, aes(y = TotalCharges, x = Churn, fill = Churn, color = Churn, alpha = 1/2)) + 
+  geom_violin(trim = T, show.legend = F) +
+  geom_boxplot(width = 0.1, show.legend = F, color = "black") +
+  scale_fill_manual(values = c("#37bf49", "#c40505")) +
+  scale_color_manual(values = c("#37bf49", "#c40505")) +
+  geom_jitter(size = 0.1, width = 0.05, alpha = 1/10, color = "black", show.legend = F) +
+  labs(y = "Total Charges ($)") +
+  theme_minimal()
+```
+
+* **`TotalCharges`** - Customers who have churned have spent less money on average. This makes sense because their tenure is a lot shorter.
+
+```{r}
+# Total Charges
+
+# Creating bins for MonthlyCharges
+churnDf <- churnDf %>% 
+  mutate(binTotalCharges = (TotalCharges %/% 100) * 100) 
+
+# Now we obtain a summary of the churnDf DF to calculate number of customers in each bin, avergae, number of churned customers in the bin, and churn rate
+hist_summary3 <- churnDf %>%
+  group_by(binTotalCharges) %>%
+  summarize(Freq = n(),
+            n_churn = sum(Churn=='Yes')) %>%
+  mutate(percentage = round(n_churn/Freq*100, 1))
+
+# Plot a bar chart based on the hist_summary, adding a dashed line on top of it to show
+#   the average of TotalCharges in each bin
+hist_summary3 %>%
+  ggplot() +
+    scale_fill_gradient(low = "green", high = "red") +
+    geom_bar(aes(x = binTotalCharges, y = Freq), width = 25, stat = "identity") +
+    geom_line(aes(x = binTotalCharges, y = percentage*10), linetype="dotdash") +
+    geom_smooth(aes(x = binTotalCharges, y = percentage*10), se = F) +
+    labs(y = "Count", x = "Total Charges [$]",
+         title = "Histogram of Total Charges",
+         subtitle = "Dashed line shows the churn rate for each bucket. Blue line is the smoothed average of churn rate.") +
+    scale_y_continuous(limits = c(0, 1000),
+                       sec.axis = sec_axis(~./10, name = "Churn Rate [%]")) +
+    theme_minimal()
+```
+
+### MonthlyCharges vs. TotalCharges
+
+```{r}
+churnDf %>% 
+  mutate(tenure = ceiling(tenure/12)) %>%
+  ggplot(aes(MonthlyCharges, TotalCharges)) +
+    geom_point(aes(color = as.factor(tenure)), alpha = 1/10) +
+    facet_wrap(~Churn) + 
+    scale_color_manual(values = c("#e51010", "#e26d28", "#c67d1d", "#6a8e0e", "#8cbf09", "#6ee22f")) +
+    labs(title = "MonthlyCharges vs. TotalCharges",
+         subtitle = "Split by customer's churn status and colored by the years of tenure") +
+    theme_minimal()
+```
+
+### Correlation matrix
+
+```{r}
+cor_df <- round(cor(churnDf[c("MonthlyCharges", "TotalCharges", "tenure")]), 2)
+ggcorrplot(cor_df, method = "circle")
+```
+
+
+As expected `tenure` and `TotalCharges` as well as `MonthlyCharges` and `TotalCharges` are highly correlated.
+
+### Average Monthly Charges by Tenure Groups
+
+```{r}
+churnDf %>% 
+  group_by(tenureY, Churn) %>%
+  summarize(avg_monthly_charges = mean(MonthlyCharges, na.rm = T)) %>%
+  ggplot(aes(x = tenureY, y = avg_monthly_charges, fill = Churn)) +
+    geom_bar(stat = "identity", position = "dodge", alpha = 2/3) +
+    scale_fill_manual( values = c("#37bf49", "#c40505")) +
+    labs(x = "Tenure (years)", y = "Average Monthly Charge ($)",
+         title = "Average Monthly Charges by Tenure Groups") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(face="bold", size=10),
+          axis.text.y = element_text(face="bold", size=10))
+```
+
+### Average Total Charges by Tenure Groups
+
+```{r}
+churnDf %>% 
+  mutate(tenureY = ceiling(tenure/12)) %>%
+  group_by(tenureY, Churn) %>%
+  summarize(avg_monthly_charges = mean(TotalCharges, na.rm = T)) %>%
+  ggplot(aes(x = tenureY, y = avg_monthly_charges, fill = Churn)) +
+    geom_bar(stat = "identity", position = "dodge", alpha = 2/3) +
+    scale_fill_manual( values = c("#37bf49", "#c40505")) +
+    labs(x = "Tenure (years)", y = "Average Total Charge ($)",
+         title = "Average Total Charges by Tenure Groups") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(face="bold", size=10),
+          axis.text.y = element_text(face="bold", size=10))
+```
+
+# Modeling
+Note: modeling is not generally considered a part of the EDA process. This is just a brief extra session to showcase a simple predictive analysis workflow in R.
+
+## Split test/training sets
+Before training the model we should set aside a "test" set for model evaluation. We will take 25% of the records at random for testing.
+
+<img src="../png/train-test.png" align="center" width="350px">
+
+```{r}
+set.seed(1)
+churnDfML <- select(churnDf, -c(tenureY, binCharges, binTotalCharges))
+train_test_split <- rsample::initial_split(churnDfML, prop = 0.75)
+
+# Retrieve train and test sets
+train_df <- rsample::training(train_test_split)
+test_df  <- rsample::testing(train_test_split)
+print(paste0("records in train dataset: ", nrow(train_df)))
+print(paste0("records in test dataset: ", nrow(test_df)))
+```
+
+**One-hot encoding**:  transforming categorical variables into separate features. All non-numeric variables will need to be converted to categorical (dummy) variables. This is known as one-hot encoding.
+
+## Preprocessing with Recipes package
+Before feeding the training data into the model we need to perform some preprocessing steps on the data. These steps can include one-hot encoding, transformation (e.g., log transformation), scaling, centering, etc.
+
+With **recipes** we can create a "recipe" for how these steps should be applied to the data. We then use this recipe on both train and test datasets to apply the necessary changes to them.
+
+```{r}
+data.frame(churnDf, stringsAsFactors = T)
+```
+
+```{r}
+# A recipe is a description of what steps should be applied to a data set in order to get it ready for data analysis.
+recipe_obj <- recipes::recipe(Churn ~ ., data = train_df) %>%  # object = Churn ~ . meaning “Churn” is the outcome and all other features are predictors
+  recipes::step_discretize(tenure, options = list(cuts = 6)) %>%  #  convert numeric data into a factor with bins having approximately the same number of data points (based on the training set)
+  recipes::step_log(TotalCharges) %>%  # creates a specification of a recipe step that will log transform the variable
+  recipes::step_dummy(all_nominal(), -all_outcomes()) %>%  # creates a a specification of a recipe step that will convert nominal data into one or more numeric binary
+  recipes::prep(data = train_df)  # estimates the required parameters from a training set that can be later applied to other data sets
+
+# Print the recipe object
+recipe_obj
+```
+
+```{r}
+all_outcomes()
+```
+
+### Applying the recipe
+We can apply our "recipe" to any data set with `bake()` function. It processes the data following the steps specified in the recipe.
+
+```{r}
+# Baking of train and test datasets (predictors only)
+train <- recipes::bake(recipe_obj, new_data = train_df)
+test  <- recipes::bake(recipe_obj, new_data = test_df)
+glimpse(train)
+```
+
+## Train a logistic regression model
+
+```{r}
+model <- glm(Churn ~., family = "binomial", data = train)
+summary(model)
+```
+
+```{r}
+# Model Evaluation using the test data:
+prob <- predict(model, type = "response", newdata = test[,-1])
+test$prob <- prob
+
+# Using probability cutoff of 50%.
+pred <- factor(ifelse(prob >= 0.50, "Yes", "No"))
+actual_churn <- test$Churn
+table(actual_churn, pred)
+```
+
+```{r}
+conf_final <- confusionMatrix(pred, actual_churn, positive = "Yes")
+conf_final
+```
+
+```{r}
+accuracy <- conf_final$overall[1]
+sensitivity <- conf_final$byClass[1]
+specificity <- conf_final$byClass[2]
+auc <- c(AUC = pROC::roc(response = test$Churn, predictor = as.numeric(cutoff_churn)) %>% auc)
+accuracy
+sensitivity
+specificity
+auc
+```
+
+* **Accuracy**: percentage of correct guesses
+
+* **Sensitivity** (also called the true positive rate, the recall, or probability of detection): measures the proportion of actual positives that are correctly identified as such (e.g., the percentage of sick people who are correctly identified as having the condition).
+
+* **Specificity** (also called the true negative rate): measures the proportion of actual negatives that are correctly identified as such (e.g., the percentage of healthy people who are correctly identified as not having the condition).
+
+* **AUC**: the area under the ROC curve. This means our model has a 72% chance to assign a probability to a randomly chosen churning customer which is higher than a randomly chosen non-churning customer.
+
+```{r}
+perform_fn <- function(prob, cutoff) 
+{
+  predicted_churn <- factor(ifelse(prob >= cutoff, "Yes", "No"))
+  conf <- confusionMatrix(predicted_churn, actual_churn, positive = "Yes")
+  sensitivity <- conf$byClass[1]
+  specificity <- conf$byClass[2]
+  out <- t(as.matrix(c(sensitivity, specificity))) 
+  colnames(out) <- c("sensitivity", "specificity")
+  return(out)
+}
+
+s = seq(0.01,0.80,length=100)
+OUT = matrix(0,100,2)
+
+for(i in 1:100)
+{
+  OUT[i,] = perform_fn(prob, s[i])
+} 
+
+plot(s, OUT[,1], xlab = "Cutoff", ylab = "Value", cex.lab = 1.5, cex.axis = 1.5, ylim = c(0,1),
+     type = "l", lwd = 2, axes = FALSE, col = 2)
+axis(1, seq(0, 1, length = 5), seq(0, 1, length = 5), cex.lab = 1.5)
+axis(2, seq(0, 1, length = 5), seq(0, 1, length = 5), cex.lab = 1.5)
+lines(s, OUT[,2], col = "darkgreen", lwd = 2)
+box()
+legend("bottom", col = c(2, "darkgreen", 4, "darkred"), text.font = 3, inset = 0.02,
+       box.lty = 0, cex = 0.8, 
+       lwd = c(2,2,2,2), c("Sensitivity", "Specificity"))
+abline(v = 0.32, col = "black", lwd = 1, lty = 2)
+axis(1, at = seq(0.1, 1, by = 0.1))
+```
+
+We will choose a cutoff value of 0.32 to increase the accuracy:
+
+```{r}
+prediced_churn <- factor(ifelse(prob >=0.32, "Yes", "No"))
+conf_final <- confusionMatrix(prediced_churn, actual_churn, positive = "Yes")
+accuracy <- conf_final$overall[1]
+sensitivity <- conf_final$byClass[1]
+specificity <- conf_final$byClass[2]
+auc <- c(AUC = pROC::roc(response = test$Churn, predictor = as.numeric(prediced_churn)) %>% auc)
+table(actual_churn, prediced_churn)
+accuracy
+sensitivity
+specificity
+auc
+```
+
+```{r}
+predicted_test <- as.tibble(cbind(prediced_churn, test))
+predicted_test
+```
+
+Total number of test cases: `nrow(predicted_test)`
+
+```{r}
+table(actual_churn, prediced_churn)
+
+predicted_test %>% 
+  ggplot() +
+    geom_bar(aes(x = Churn, fill = (prediced_churn == Churn)), position = "dodge", alpha = 2/3) +
+    scale_fill_manual( values = c("#c40505", "#37bf49")) +
+    labs(title = "A Count of TRUE vs. FALSE Predictions for Yes/No Churn Categories")
+```
+
+Actual/Prediction
+
+* No/No (green in the No bucket): True Negative - We accurately labeled these customers at no risk! **:-)**
+* Yes/Yes (green in the Yes bucket): True Positive - We accurately predicted these churning customers! **:-)**
+* No/Yes (red in the No bucket): False Positive - We thought they were leaving but they didn't! **:-|**
+* Yes/No (red in the Yes bucket): False Negative - We failed to predict these churning customers! **:-(**
