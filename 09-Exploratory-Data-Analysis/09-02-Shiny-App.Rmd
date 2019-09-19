@@ -1,0 +1,29 @@
+---
+title: "Shiny Apps"
+output: html_notebook
+---
+
+```{r message=FALSE}
+library(shiny)
+runExample("01_hello")
+```
+
+## Running an App
+My `hist-shiny` is stored in a folder with the same name. We will use the folder name to call the app:
+
+```{r message=FALSE}
+runApp("hist-shiny")
+```
+
+Stop the app and make some changes:
+
+1. Change the title from “Hello Shiny!” to “Hello World!”.
+
+2. Set the minimum value of the slider bar to 5
+
+3. Change the histogram border color from "white" to "orange".
+
+
+more examples: https://shiny.rstudio.com/gallery/
+
+[superzip example](https://shiny.rstudio.com/gallery/superzip-example.html)
