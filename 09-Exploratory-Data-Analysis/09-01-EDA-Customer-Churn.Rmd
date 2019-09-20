@@ -476,7 +476,7 @@ conf_final
 accuracy <- conf_final$overall[1]
 sensitivity <- conf_final$byClass[1]
 specificity <- conf_final$byClass[2]
-auc <- c(AUC = pROC::roc(response = test$Churn, predictor = as.numeric(cutoff_churn)) %>% auc)
+auc <- c(AUC = pROC::roc(response = test$Churn, predictor = as.numeric(pred)) %>% auc)
 accuracy
 sensitivity
 specificity
